@@ -12,7 +12,7 @@
 
 ## How to work with this notebook
 
-1. Download or clone the `bitbucket` folder
+1. Download or clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
 1. Issue the command `pipenv install`. This step requires that you have `python` and `pipenv` installed in your system
 
@@ -20,7 +20,7 @@
 
 1. To complete this step you have to delete both `Pipfile` and `Pipfile.lock`
 
-1. Download or clone the `bitbucket` folder
+1. Download or clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
 1. Issue the command `pipenv install`. This step requires that you have `python` and `pipenv` installed in your system
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the folder
@@ -262,4 +262,6 @@ for page in p.scrap_topics_for_range_of_pages(end=1):
 ```
 
 ## To do
+
 1. Show list of all sections
+1. Fix scroll to top link
