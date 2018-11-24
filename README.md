@@ -260,3 +260,6 @@ for page in p.scrap_topics_for_range_of_pages(end=1):
         print(textwrap.indent(str(topic.comments), "    "), " comments")
         print()
 ```
+
+## To do
+1. Show list of all sections

@@ -525,7 +525,7 @@ class TopicCollector:
             Post.comments = int(meta_component[1].text) # count includes the post itself
             yield Post
 
-    def scrap_topics_for_range_of_pages(self, start=0, end=0, _maximum_pages=False):
+    def scrap_topics_for_range_of_pages(self, start=0, stop=0, _maximum_pages=False):
         """Yield all topics between 'start' and 'end' for a section
 
         Parameters
@@ -539,8 +539,8 @@ class TopicCollector:
             same yields as for titles()
         """
         if _maximum_pages:
-            end = self.max_pages() - 1
-        while start <= end:
+            stop = self.max_pages() - 1
+        while start <= stop:
             next_url = '{}/{}'.format(self.base_url, start)
             yield self._scrap_topics_for_a_single_page(next_url)
             start += 1
@@ -571,24 +571,31 @@ def export_user_comments_to_html(username=None, max_page=5):
         # html scaffold
         f.write("<html xmlns='http://www.w3.org/1999/xhtml'>\n")
         f.write("\t<head>\n")
+
+        
+        # resources
         f.write("\t\t<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/superhero/bootstrap.min.css'>\n")
         f.write("\t\t<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>\n")
         f.write("\t\t<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js' integrity='sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T' crossorigin='anonymous' async></script>\n")
-        f.write("\t\t<title>Hack Nairaland - comment history for {}</title>\n".format(username.lower()))
+        f.write("<script defer src='https://use.fontawesome.com/releases/v5.0.6/js/all.js' async></script>")
+        f.write("<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>")
+        # end resources
+
+        f.write("\t\t<title>Comment history for {} - Hack Nairaland</title>\n".format(username.lower()))
         f.write("\t</head>\n")
-        f.write("\t<body style='padding-top:5.5rem;'>\n")
+        f.write("\t<body style='padding-top:7rem;margin-bottom:5rem;'>\n")
         # navbar
-        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary fixed-top'>\n")
-        f.write("\t\t<a class='navbar-brand'>Hack Nairaland</a>\n")
+        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary fixed-top' id='topNav'>\n")
+        f.write("\t\t<a class='navbar-brand' style='font-size:36px;'>Hack Nairaland</a>\n")
         f.write("\t\t<button type='button' class='navbar-toggler my-toggler' data-toggle='collapse' data-target='.navcontent'>\n")
         f.write("\t\t<span class='sr-only'>Toggle navigation</span>\n")
         f.write("\t\t<span class='navbar-toggler-icon'></span>\n")
         f.write("\t\t</button>\n")
-        f.write("<div class='collapse navbar-collapse navcontent'>\n")
-        f.write("<ul class='nav navbar-nav lefthand-navigation'>\n")
-        f.write("<li class='nav-item'><a class='nav-link' href='#' title='Home'>Home</a></li>\n")
-        f.write("</ul>\n")
-        f.write("</div>\n")
+        f.write("\t\t<div class='collapse navbar-collapse navcontent'>\n")
+        f.write("\t\t<ul class='nav navbar-nav lefthand-navigation'>\n")
+        f.write("\t\t<li class='nav-item'><a class='nav-link' href='#' title='Home'>Home</a></li>\n")
+        f.write("\t\t</ul>\n")
+        f.write("\t\t</div>\n")
         f.write("\t\t</nav>\n")
         # end navbar
         f.write("\t\t<div class='container'>\n")
@@ -602,22 +609,146 @@ def export_user_comments_to_html(username=None, max_page=5):
         f.write("\t\t</nav>\n")
         # end breadcrumb
 
+        i = 1
         user = UserCommentHistory(username)
         for page in list(user.scrap_comments_for_range_of_pages(stop=max_page)):
+
+            f.write("\t\t\t<div id='js-scroll-target{}'>\n".format(i)) # div for targeting scroll
+            f.write("\t\t\t<h2><a href='#js-scroll-target{0}' class='smooth-scroll'>Page {1}</a></h2>".format(i+1, i))
+            i += 1
+
             for section, topic_plus_comment in page.items():
-                f.write("<h3>{}</h3>\n".format(section.split('**')[0])) # remove the ** separating section and index
+                f.write("\t\t\t<h3>Section: {}</h3>\n".format(section.split('**')[0])) # remove the ** separating section and index
+                f.write('\t\t\t<h4>Subject: {}</h4>'.format(topic_plus_comment.topic))
+                
                 parsed_comment = topic_plus_comment.parsed_comment
-                f.write("<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_comment))
+                f.write("\t\t\t<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_comment))
                 quotes = parsed_comment.quotes_ordered_dict
                 
                 for username, comment in quotes.items():
-                    f.write("<h4>{}</h4>\n".format(username))
-                    f.write("<p class='text-primary'><em>{}</em></p>\n".format(comment))
-                f.write("<div class='dropdown-divider'></div>\n")
-            f.write("<hr>\n")
+                    f.write("\t\t\t\t<h4 class='text-info'>{}</h4>\n".format(username))
+                    f.write("\t\t\t\t<p class='text-primary'><em>{}</em></p>\n".format(comment))
+                f.write("\t\t\t<div class='dropdown-divider' style='border:1px solid white;'></div>\n")
+            f.write("\t\t\t</div>\n") # finish scroll div
+
+        # continue up page structure
+        f.write("\t\t\t<p class='float-right'><a href='#topNav' class='smooth-scroll'>Back to top</a></p>\n") # back to top
         f.write("\t\t</div>\n")
-        f.write("\t</body>")    
+        # jquery smooth scroll
+        f.write("<script>\n")
+        f.write("$(document).ready(function(){\n")
+        f.write("\t $('.smooth-scroll').on('click', function(event) {\n")
+        f.write("\t\tif (this.hash !== '') {\n")
+        f.write("\t\t\tevent.preventDefault();\n")
+        f.write("\t\t\tvar hash = this.hash;\n")
+        f.write("\t\t\t$('html, body').animate({\n")
+        f.write("\t\t\t scrollTop: $(hash).offset().top\n")
+        f.write("\t\t\t}, 800, function(){\n")
+        f.write("\t\t\t window.location.hash = hash;\n")
+        f.write("\t\t\t});\n")
+        f.write("\t\t}\n")
+        f.write("\t});\n")
+        f.write("});\n")
+        f.write("</script>\n")
+        # end jquery smooth scroll
+        f.write("\t</body>\n")
+        f.write("</html>")
     print("Done hacking")
+    os.startfile(destination_file)
+
+def export_topics_to_html(section='romance', start_page=0, stop_page=3):
+    """
+    Writes all topics between start and end of a section to excel.
+    Same output as titles_links_metadata() but written to a excel file
+    """
+    
+    print("Now hacking nairaland. Please wait a few minutes.")
+        
+    destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.html".format(section, start_page, stop_page))
+    if os.path.exists(destination_file):
+        os.remove(destination_file)
+    with open(destination_file, 'a+', encoding='utf-8') as f:
+        
+        # html scaffold
+        f.write("<html xmlns='http://www.w3.org/1999/xhtml'>\n")
+        f.write("\t<head>\n")
+        
+        # resources
+        f.write("\t\t<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/superhero/bootstrap.min.css'>\n")
+        f.write("\t\t<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>\n")
+        f.write("\t\t<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js' integrity='sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T' crossorigin='anonymous' async></script>\n")
+        f.write("<script defer src='https://use.fontawesome.com/releases/v5.0.6/js/all.js' async></script>")
+        f.write("<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>")
+        # end resources
+
+        f.write("\t\t<title>Topics filed under {} - Hack Nairaland</title>\n".format(section))
+        f.write("\t</head>\n")
+        f.write("\t<body style='padding-top:7rem;margin-bottom:5rem;'>\n")
+        # navbar
+        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary fixed-top' id='topNav'>\n")
+        f.write("\t\t<a class='navbar-brand' style='font-size:36px;'>Hack Nairaland</a>\n")
+        f.write("\t\t<button type='button' class='navbar-toggler my-toggler' data-toggle='collapse' data-target='.navcontent'>\n")
+        f.write("\t\t<span class='sr-only'>Toggle navigation</span>\n")
+        f.write("\t\t<span class='navbar-toggler-icon'></span>\n")
+        f.write("\t\t</button>\n")
+        f.write("\t\t<div class='collapse navbar-collapse navcontent'>\n")
+        f.write("\t\t<ul class='nav navbar-nav lefthand-navigation'>\n")
+        f.write("\t\t<li class='nav-item'><a class='nav-link' href='#' title='Home'>Home</a></li>\n")
+        f.write("\t\t</ul>\n")
+        f.write("\t\t</div>\n")
+        f.write("\t\t</nav>\n")
+        # end navbar
+        f.write("\t\t<div class='container'>\n")
+        f.write("<h1>Topics filed under <a href='https://nairaland.com/{0}' target='_blank'>{0}</a></h1>\n".format(section))
+        # breadcrumb
+        f.write("\t\t<nav aria-label='breadcrumb'>\n")
+        f.write("\t\t<ol class='breadcrumb'>\n")
+        f.write("\t\t<li class='breadcrumb-item'><a href='#'>Home</a></li>\n")
+        f.write("\t\t<li class='breadcrumb-item'>Topics filed under{}</li>\n".format(section))
+        f.write("\t\t</ol>\n")
+        f.write("\t\t</nav>\n")
+        # end breadcrumb
+        
+        i = 1
+        topics = TopicCollector(section=section)
+        for page in topics.scrap_topics_for_range_of_pages(start=start_page, stop=stop_page):
+
+            f.write("\t\t\t<div id='js-scroll-target{}'>\n".format(i)) # div for targeting scroll
+            f.write("\t\t\t<h2><a href='#js-scroll-target{0}' class='smooth-scroll'>Page {1}</a></h2>".format(i+1, i))
+            i += 1
+            
+            for topic in list(page):
+                f.write("\t\t\t<h3>Topic: <a href='{}' target='_blank'>{}</a></h3>".format(topic.url, topic.title))
+                f.write("\t\t\t<h4>Poster: {}</h4>".format(topic.poster))
+                f.write("\t\t\t<h5>{} <i class='fas fa-comment'></i></h5>".format(topic.comments))
+                f.write("\t\t\t<div class='dropdown-divider' style='border:1px solid white;'></div>\n")
+            f.write("\t\t\t</div>\n") # finish scroll div
+
+        f.write("\t\t\t<p class='float-right'><a href='#topNav' class='smooth-scroll'>Back to top</a></p>\n")
+        f.write("\t\t</div>\n")
+        # jquery smooth scroll
+        f.write("<script>\n")
+        f.write("$(document).ready(function(){\n")
+        f.write("\t $('.smooth-scroll').on('click', function(event) {\n")
+        f.write("\t\tif (this.hash !== '') {\n")
+        f.write("\t\t\tevent.preventDefault();\n")
+        f.write("\t\t\tvar hash = this.hash;\n")
+        f.write("\t\t\t$('html, body').animate({\n")
+        f.write("\t\t\t scrollTop: $(hash).offset().top\n")
+        f.write("\t\t\t}, 800, function(){\n")
+        f.write("\t\t\t window.location.hash = hash;\n")
+        f.write("\t\t\t});\n")
+        f.write("\t\t}\n")
+        f.write("\t});\n")
+        f.write("});\n")
+        f.write("</script>\n")
+        # end jquery smooth scroll
+
+        # finish up page structure
+        f.write("\t</body>\n")
+        f.write("</html>")
+    print("Done hacking")
+    os.startfile(destination_file)
 
 if __name__ == "__main__":
     print("\n\nSee the associated Jupyter Notebook for usage instructions.")
