@@ -187,8 +187,7 @@ It contains nothing. Just a blank row.
 ```python
 import textwrap
 
-user = UserCommentHistory("preccy69")
-for page in list(user.scrap_comments_for_page_range(start=0, stop=1)):
+for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(start=0, stop=1)):
     for section, topic_plus_comment in page.items():
         print("\n\n", "*"*40, section, "*"*40)
         print(topic_plus_comment.topic.upper()) # for differentiation only
@@ -215,7 +214,7 @@ for page in list(user.scrap_comments_for_page_range(start=0, stop=1)):
         <a name="2792995"></a>
         <img src="/icons/sticky.gif">
         <b>
-            <a href="/2792995/nairaland-says-no-secessionists">Nairaland Says No To Secessionists</a>
+            <a href="/2792995/nairaland-says-no-secessionists">Topic title</a>
         </b>
         <a href="topic-full-url/1">(1)</a>
         <a href="topic-full-url/2">(2)</a>
@@ -225,7 +224,7 @@ for page in list(user.scrap_comments_for_page_range(start=0, stop=1)):
         <br>
         <span class="s">
             by
-            <b>
+            <b> <!--These <b> tags occur a maximum of 7 times-->
                 <a href="/username">username</a>
             </b>
             .
@@ -239,7 +238,7 @@ for page in list(user.scrap_comments_for_page_range(start=0, stop=1)):
             <b>2015</b> <!-- Visible for posts older than current year -->
             (
             <b>
-                <a href="/donchris921">Donchris921</a>
+                <a href="/user_moniker">user_moniker</a>
             </b>
             )
         </span>
@@ -251,13 +250,14 @@ for page in list(user.scrap_comments_for_page_range(start=0, stop=1)):
 
 ```python
 import textwrap
-p = TopicCollector(section='politics')
-for page in p.scrap_topics_for_range_of_pages(end=1):
+for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(end=1):
     for topic in list(page):
         print(topic.poster)
         print(textwrap.indent(topic.title, "    "))
         print(textwrap.indent(topic.url, "    "))
-        print(textwrap.indent(str(topic.comments), "    "), " comments")
+        print(textwrap.indent(str(topic.comments), "    "), " comments") # str is necessary because of the way textwrap works
+        print(textwrap.indent(topic.views), "    ")
+        print(textwrap.indent(topic.other_meta), "    ")
         print()
 ```
 

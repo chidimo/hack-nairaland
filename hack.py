@@ -512,7 +512,7 @@ class TopicCollector:
         post_table = soup.find('table', id=False, summary=False)
 
         for td in post_table.find_all('td', id=True):
-            Post = namedtuple('Post', ['poster', 'title', 'url', 'comments'])
+            Post = namedtuple('Post', ['poster', 'title', 'url', 'comments', 'views', 'other_meta'])
 
             title_component = td.find('b').find('a', href=True)
             Post.title = title_component.text.strip()
@@ -522,7 +522,10 @@ class TopicCollector:
             meta_component = td.find('span', class_='s').find_all('b')
 
             Post.poster = meta_component[0].text.strip()
-            Post.comments = int(meta_component[1].text) # count includes the post itself
+            Post.comments = int(meta_component[1].text.strip()) # count includes the post itself
+            # Join all other meta as a single string
+            Post.views = meta_component[2].text.strip()
+            Post.other_meta = " ".join([each.text.strip() for each in meta_component[3:]])
             yield Post
 
     def scrap_topics_for_range_of_pages(self, start=0, stop=0, _maximum_pages=False):
@@ -720,7 +723,7 @@ def export_topics_to_html(section='romance', start_page=0, stop_page=3):
             for topic in list(page):
                 f.write("\t\t\t<h3>Topic: <a href='{}' target='_blank'>{}</a></h3>".format(topic.url, topic.title))
                 f.write("\t\t\t<h4>Poster: {}</h4>".format(topic.poster))
-                f.write("\t\t\t<h5>{} <i class='fas fa-comment'></i></h5>".format(topic.comments))
+                f.write("\t\t\t<h5>{} <i class='fas fa-comment'></i> | {} <i class='fas fa-eye'></i> | Others: {}</h5>".format(topic.comments, topic.views, topic.other_meta))
                 f.write("\t\t\t<div class='dropdown-divider' style='border:1px solid white;'></div>\n")
             f.write("\t\t\t</div>\n") # finish scroll div
 
