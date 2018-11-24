@@ -1,7 +1,5 @@
 
-# Hack [Nairaland](https://nairaland.com)
-
-This is a fun exercise on web scraping.
+# Hack [Nairaland](https://nairaland.com) - an exercise on web scraping.
 
 ## What you can do with this notebook
 
@@ -14,13 +12,17 @@ This is a fun exercise on web scraping.
 
 ## How to work with this notebook
 
-1. Download or clone the `github`folder
-1. Open `cmd.exe` and `cd` (i.e. navigate) into the folder
+1. Download or clone the `bitbucket` folder
+1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
 1. Issue the command `pipenv install`. This step requires that you have `python` and `pipenv` installed in your system
 
 ## Creating the environment on your own
 
-1. Create a folder
+1. To complete this step you have to delete both `Pipfile` and `Pipfile.lock`
+
+1. Download or clone the `bitbucket` folder
+1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
+1. Issue the command `pipenv install`. This step requires that you have `python` and `pipenv` installed in your system
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the folder
 1. Issue commands `pipenv install`. Wait for the environment to be created.
 1. When environment creation is done, activate it by issuing the command `pipenv shell`
