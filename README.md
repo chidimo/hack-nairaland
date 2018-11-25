@@ -3,18 +3,19 @@
 
 This project is meant to be a web scraping exercise. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. It also served as an exercise for me in the understanding of html page structure. It can for you too. I have documented some of the more common structures you'll find on the site.
 
+The major challenge in scraping the site is the multitude of `<br>` tags it contains. Every press of the `ENTER` key adds a new one and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, I was able to make get meaningful content, though its not 100% okay.
+
 Several demos of this project in action are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
 
 There's also an attempt at analyzing post titles. This is done in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder.
 
-## Functionalities offered by this project
+## Functionalities
 
-1. Export all comments made by a user to an excel file (other formats can easily be added). You may select how many pages of comments you want.
-1. Export all post titles from a section within a range that you specify to an excel file (other formats may be added).
-1. Get all unique commenters on a post
+1. Export all comments made by a user to html or excel file. You may select how many pages of comments you want to grab.
+1. Export all post titles from a section within a range that you specify to html or excel.
+1. Get monikers of all unique commenters on a post
 1. Get all commenters on a post and their comment frequency
-1. Save a post permanently by exporting it to word
-1. Pick two users and see their discussion thread (to do)
+1. Save a post permanently by exporting it to `docx` format
 
 ## Nairaland sections
 
@@ -72,7 +73,7 @@ The available sections and their urls are shown in the dictionary below. The for
 1. Issue the command `pipenv install`. Wait for the environment to be recreated.
 1. Issue command `pipenv shell` to activate the environment.
 
-## Creating the `ipython` kernel
+## Creating the `hack-nairaland` kernel
 
 1. Optional: Inside your virtual environment, issue the following two commands (only needed if you created the virtual environment without using the `Pipfile` that comes with this repo.)
 
@@ -87,7 +88,7 @@ The available sections and their urls are shown in the dictionary below. The for
     `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
 
 1. The `--user other-env` argument, value pair is optional. See [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for explanation
-1. Now when you reload your `ipython/jupyter` notebooks you should see the newly created kernel listed under kernels. You can see mine in the screenshot below.
+1. Now when you reload your `ipython/jupyter` notebooks you should see the newly created kernel listed under kernels. You can see some kernels I've created in the screenshot below.
 
 ![Hack-nairaland kernel in jupyter notebook](hack-nairaland-kernel.png)
 
@@ -97,13 +98,17 @@ Every function has its own data structure. They are documented here for easy und
 
 ### Functions
 
-#### `def parse_html_br_tag_content(break tag)`
+#### `def get_left_right_of_html_br_element(br_element)`
+
+This function checks a single `html <br>` element and determines if it has texts before and/or after it, then it returns those texts as a `list` of `[before tag, after tag]`
 
 #### `def join_tuples(list_of_tuples)`
 
 #### `format_comments(bs4_comment_block_object)`
 
-This function has a side effect of writing all comments it encounters to a file. This file can be found in `output/comment_block/` folder. 
+Takes a block of comment as a `BeautifulSoup4` object and formats it into proper paragraphs.
+
+This function has a side effect of writing all comments it encounters to a file. This file can be found in `comment-blockS/` folder. It acts as a kind of log of every comment block that is encountered as you work with this project. View as raw html to see what the comment blocks look like.
 
 #### `def parse_comment_block(bs4_comment_block_object)`
 
@@ -373,3 +378,4 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
 ## To do
 
 1. Fix scroll to top link
+1. Grab nairaland icons from page

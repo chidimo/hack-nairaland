@@ -27,20 +27,20 @@ class TestParseCommentBlock(unittest.TestCase):
         self.assertEqual(parsed_data, excpected)
 
 class TestParsebrTag(unittest.TestCase):
-    def test_tag_with_only_previous_sibling(self):
+    def test_element_with_only_previous_sibling(self):
         tag_block = """
         This tag has previous sibling text BUT no next sibling.
         <br/>
         """
         tag = BeautifulSoup(tag_block, 'html5lib').find('br')
-        self.assertEqual(hack.parse_html_br_tag_content(tag)[0], "This tag has previous sibling text BUT no next sibling.")
+        self.assertEqual(hack.get_left_right_of_html_br_element(tag)[0], "This tag has previous sibling text BUT no next sibling.")
 
-    def test_tag_with_only_next_sibling(self):
+    def test_element_with_only_next_sibling(self):
         tag_block = """<br/>
         This tag has next sibling text BUT no previous sibling.
         """
         tag = BeautifulSoup(tag_block, 'html5lib').find('br')
-        self.assertEqual(hack.parse_html_br_tag_content(tag)[1], "This tag has next sibling text BUT no previous sibling.")
+        self.assertEqual(hack.get_left_right_of_html_br_element(tag)[1], "This tag has next sibling text BUT no previous sibling.")
 
     def tag_with_no_previous_or_next_sibling(self):
         tag_block = """
@@ -53,18 +53,18 @@ class TestParsebrTag(unittest.TestCase):
         <br/>
         """
         tag = BeautifulSoup(tag_block, 'html5lib').find('br')
-        self.assertEqual(hack.parse_html_br_tag_content(tag), "")
+        self.assertEqual(hack.get_left_right_of_html_br_element(tag), "")
         tag2 = BeautifulSoup(tag_block2, 'html5lib').find('br')
-        self.assertEqual(hack.parse_html_br_tag_content(tag2), "")
+        self.assertEqual(hack.get_left_right_of_html_br_element(tag2), "")
 
-    def test_tag_with_both_next_and_previous_siblings(self):
+    def test_element_with_both_next_and_previous_siblings(self):
         tag_block = """
         This tag has previous sibling text
         <br/>
         It also has a next sibling text
         """
         tag = BeautifulSoup(tag_block, 'html5lib').find('br')
-        self.assertEqual(hack.parse_html_br_tag_content(tag), ("This tag has previous sibling text", "It also has a next sibling text"))
+        self.assertEqual(hack.get_left_right_of_html_br_element(tag), ("This tag has previous sibling text", "It also has a next sibling text"))
 
 class TestPostCollector(unittest.TestCase):
     def setUp(self):

@@ -44,7 +44,7 @@ def new_logger(log_file_name):
     logger.propagate = False
     return logger
 
-PARSE_BR_TAG_LOGGER = new_logger('log_html_br_tag.log')
+PARSE_BR_element_LOGGER = new_logger('log_html_br_element.log')
 PARSE_COMMENT_BLOCK_LOGGER = new_logger('log_parse_comment_block.log')
 FORMAT_COMMENTS_LOGGER = new_logger('log_format_comments.log')
 
@@ -68,7 +68,7 @@ def unique_everseen(iterable, key=None):
                 seen_add(k)
                 yield element
 
-def parse_html_br_tag_content(break_tag):
+def get_left_right_of_html_br_element(br_element):
     """Get content of the next and previous sibling of a <br/> tag
 
     Parameters
@@ -88,11 +88,11 @@ def parse_html_br_tag_content(break_tag):
     3. If <br/> is encountered, None is returned.
     4. If any other string which result in an error is encountered, None is returned
     """
-    p_sibling = break_tag.previous_sibling
-    n_sibling = break_tag.next_sibling
+    p_sibling = br_element.previous_sibling
+    n_sibling = br_element.next_sibling
 
-    PARSE_BR_TAG_LOGGER.debug("previous sibling\n{}".format(p_sibling))
-    PARSE_BR_TAG_LOGGER.debug("next sibling\n{}".format(n_sibling))
+    PARSE_BR_element_LOGGER.debug("previous sibling\n{}".format(p_sibling))
+    PARSE_BR_element_LOGGER.debug("next sibling\n{}".format(n_sibling))
 
     return_value = [None, None]
     try:
@@ -162,12 +162,12 @@ def format_comments(bs4_comment_block_object):
     FORMAT_COMMENTS_LOGGER.debug(bs4_comment_block_object.prettify())
 
     comment = []
-    break_tags = bs4_comment_block_object.find_all('br')
+    br_elements = bs4_comment_block_object.find_all('br')
 
-    if break_tags == []:
+    if br_elements == []:
         return bs4_comment_block_object.text
-    for each in break_tags:
-        content = parse_html_br_tag_content(each)
+    for tag in br_elements:
+        content = get_left_right_of_html_br_element(tag) # returns a tuple
         comment.append(content)
 
     return_string = join_tuples(comment)
@@ -196,7 +196,7 @@ def parse_comment_block(bs4_comment_block_object):
     
     PARSE_COMMENT_BLOCK_LOGGER.debug(bs4_comment_block_object.prettify())
 
-    save_dir = os.path.join(OUTPUT_DIR, "comment_block")
+    save_dir = os.path.join(BASE_DIR, "comment-blocks")
     if os.path.exists(save_dir) is False:
         os.mkdir(save_dir)
 
