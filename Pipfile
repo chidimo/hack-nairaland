@@ -11,6 +11,7 @@ python-docx = "*"
 openpyxl = "*"
 "html5lib" = "*"
 pandas = "*"
+xlrd = "*"
 
 [dev-packages]
 pylint = "*"

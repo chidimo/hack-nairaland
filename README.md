@@ -1,9 +1,13 @@
 
-# Hack [Nairaland](https://nairaland.com) - an exercise on web scraping.
+# Hack [Nairaland](https://nairaland.com)
+
+This project is meant to be an exercise in web scraping. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. It also served as an exercise for me in the understanding of html page structure. It can for you too. I have documented some of the more common structures you'll find on the site.
+
+Several demos of this project in action are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
 
 ## Functionalities offered by this project
 
-1. Export all comments ever made by a user to an excel file (other formats can easily be added).
+1. Export all comments made by a user to an excel file (other formats can easily be added). You may select how many pages of comments you want.
 1. Export all post titles from a section within a range that you specify to an excel file (other formats may be added).
 1. Get all unique commenters on a post
 1. Get all commenters on a post and their comment frequency

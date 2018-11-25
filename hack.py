@@ -14,6 +14,8 @@ import requests
 import requests.exceptions as rqe
 import openpyxl as OP
 
+from openpyxl.styles import Alignment
+
 from pywebber import Ripper
 
 logging.disable(logging.CRITICAL)
@@ -21,6 +23,7 @@ logging.disable(logging.CRITICAL)
 USERHOME = os.path.abspath(os.path.expanduser('~'))
 DESKTOP = os.path.abspath(USERHOME + '/Desktop/')
 BASE_DIR = STATUS_DIR = os.path.join(DESKTOP ,"hack-nairaland")
+ALIGNMENT = Alignment(horizontal='left')
 
 if not os.path.exists(BASE_DIR):
     os.mkdir(BASE_DIR)
@@ -707,6 +710,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
     destination_file = os.path.join(BASE_DIR, "comments_{}_{}_pages.xlsx".format(username.lower(), max_page))
     if os.path.exists(destination_file):
         os.remove(destination_file)
+    work_book.alignment = ALIGNMENT
     work_book.save(destination_file)
     print("Done hacking")
     os.startfile(destination_file)
