@@ -10,6 +10,7 @@ pywebber = "*"
 python-docx = "*"
 openpyxl = "*"
 "html5lib" = "*"
+pandas = "*"
 
 [dev-packages]
 pylint = "*"

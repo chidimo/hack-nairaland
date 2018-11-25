@@ -565,7 +565,7 @@ def export_user_comments_to_html(username=None, max_page=5):
         print("No username provided. Ending")
         return
     else:
-        print("Now hacking nairaland to generate your html file. Please wait a few minutes.")
+        print("Now hacking {}'s comments to generate html file. Please wait a few minutes.".format(username))
         
     destination_file = os.path.join(BASE_DIR, "comments_{}_{}_pages.html".format(username.lower(), max_page))
     if os.path.exists(destination_file):
@@ -587,9 +587,9 @@ def export_user_comments_to_html(username=None, max_page=5):
 
         f.write("\t\t<title>Comment history for {} - Hack Nairaland</title>\n".format(username.lower()))
         f.write("\t</head>\n")
-        f.write("\t<body style='padding-top:7rem;margin-bottom:5rem;'>\n")
+        f.write("\t<body style='margin-bottom:5rem;'>\n")
         # navbar
-        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary fixed-top' id='topNav'>\n")
+        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary' id='topNav'>\n")
         f.write("\t\t<a class='navbar-brand' style='font-size:36px;'>Hack Nairaland</a>\n")
         f.write("\t\t<button type='button' class='navbar-toggler my-toggler' data-toggle='collapse' data-target='.navcontent'>\n")
         f.write("\t\t<span class='sr-only'>Toggle navigation</span>\n")
@@ -614,8 +614,7 @@ def export_user_comments_to_html(username=None, max_page=5):
         # end breadcrumb
 
         i = 1
-        user = UserCommentHistory(username)
-        for page in list(user.scrap_comments_for_range_of_pages(stop=max_page)):
+        for page in list(UserCommentHistory(username).scrap_comments_for_range_of_pages(stop=max_page)):
 
             f.write("\t\t\t<div id='js-scroll-target{}'>\n".format(i)) # div for targeting scroll
             f.write("\t\t\t<h2><a href='#js-scroll-target{0}' class='smooth-scroll'>Page {1}</a></h2>".format(i+1, i))
@@ -661,12 +660,63 @@ def export_user_comments_to_html(username=None, max_page=5):
     print("Done hacking")
     os.startfile(destination_file)
 
+def export_user_comments_to_excel(username=None, max_page=5):
+    """Export a user's comments to a excel file
+
+    Parameters
+    -----------
+    str
+        Username
+    int
+        Maximum page count for user's comments (Default is 5). The loop breaks if we exceed actual count
+    """
+    if not username:
+        print("No username provided. Ending")
+        return
+    else:
+        print("Now hacking {}'s comments to generate excel file. Please wait a few minutes.".format(username))
+        
+    work_book = OP.Workbook()
+    active_sheet = work_book.active
+    active_sheet.title = username
+    
+    active_sheet['A1'] = "SECTION"
+    active_sheet['B1'] = "TOPIC"
+    active_sheet['C1'] = 'USER_COMMENT'
+    active_sheet['D1'] = "QUOTED_USER"
+    
+    row_number = 2
+
+    for page in list(UserCommentHistory(username).scrap_comments_for_range_of_pages(start=0, stop=1)):
+        for section, topic_plus_comment in page.items():
+            
+            active_sheet.cell(row=row_number, column=1, value=section)
+            active_sheet.cell(row=row_number, column=2, value=topic_plus_comment.topic)
+            
+            parsed_comment = topic_plus_comment.parsed_comment # a namedtuple instance. Multiple cells here
+            active_sheet.cell(row=row_number, column=3, value=parsed_comment.focus_user_comment)
+
+            quotes = parsed_comment.quotes_ordered_dict
+            
+            for username, comment in quotes.items():
+                user_plus_comment = "{}: {}".format(username, comment)
+                active_sheet.cell(row=row_number, column=4, value=user_plus_comment)
+                row_number += 1
+            row_number += 1
+
+    destination_file = os.path.join(BASE_DIR, "comments_{}_{}_pages.xlsx".format(username.lower(), max_page))
+    if os.path.exists(destination_file):
+        os.remove(destination_file)
+    work_book.save(destination_file)
+    print("Done hacking")
+    os.startfile(destination_file)
+
 def export_topics_to_html(section='romance', start=0, stop=3):
     """
     Writes all topics between start and end of a section to a html file
     """
     
-    print("Now hacking nairaland to generate your html file. Please wait a few minutes.")
+    print("Now hacking {} to generate html file. Please wait a few minutes.".format(section))
         
     destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.html".format(section, start, stop))
     if os.path.exists(destination_file):
@@ -687,9 +737,9 @@ def export_topics_to_html(section='romance', start=0, stop=3):
 
         f.write("\t\t<title>Topics filed under {} - Hack Nairaland</title>\n".format(section))
         f.write("\t</head>\n")
-        f.write("\t<body style='padding-top:7rem;margin-bottom:5rem;'>\n")
+        f.write("\t<body style='margin-bottom:5rem;'>\n")
         # navbar
-        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary fixed-top' id='topNav'>\n")
+        f.write("\t\t<nav class='navbar navbar-expand-lg navbar-dark bg-primary' id='topNav'>\n")
         f.write("\t\t<a class='navbar-brand' style='font-size:36px;'>Hack Nairaland</a>\n")
         f.write("\t\t<button type='button' class='navbar-toggler my-toggler' data-toggle='collapse' data-target='.navcontent'>\n")
         f.write("\t\t<span class='sr-only'>Toggle navigation</span>\n")
@@ -758,7 +808,7 @@ def export_topics_to_html(section='romance', start=0, stop=3):
 def export_topics_to_excel(section='romance', start=0, stop=3):
     """Writes all topics between start and end of a section to excel"""
     
-    print("Now hacking nairaland to generate your excel file. Please wait a few minutes.")
+    print("Now hacking {} to generate excel file. Please wait a few minutes.".format(section))
         
     work_book = OP.Workbook()
     active_sheet = work_book.active
