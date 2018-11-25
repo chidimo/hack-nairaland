@@ -2,6 +2,7 @@ import re
 import os
 import sys
 import codecs
+import pathlib
 import logging
 
 from operator import itemgetter
@@ -9,7 +10,7 @@ from itertools import filterfalse
 from collections import OrderedDict, namedtuple, Counter
 
 import bs4
-import docx
+from docx import Document
 import requests
 import requests.exceptions as rqe
 import openpyxl as OP
@@ -20,13 +21,13 @@ from pywebber import Ripper
 
 logging.disable(logging.CRITICAL)
 
-USERHOME = os.path.abspath(os.path.expanduser('~'))
-DESKTOP = os.path.abspath(USERHOME + '/Desktop/')
-BASE_DIR = STATUS_DIR = os.path.join(DESKTOP ,"hack-nairaland")
-ALIGNMENT = Alignment(horizontal='left')
+BASE_DIR = pathlib.Path().resolve()
+OUTPUT_DIR = pathlib.Path.joinpath(BASE_DIR, 'output')
+if not pathlib.Path.exists(OUTPUT_DIR):
+    pathlib.Path.mkdir(OUTPUT_DIR)
 
-if not os.path.exists(BASE_DIR):
-    os.mkdir(BASE_DIR)
+ALIGNMENT = Alignment(horizontal='left') # Alignment object for openpyxl
+
 
 class Error(Exception):
     pass
@@ -69,12 +70,6 @@ def unique_everseen(iterable, key=None):
             if k not in seen:
                 seen_add(k)
                 yield element
-
-def dict_to_string(dictionary):
-    """Flatten a dictionary into a single string"""
-    if isinstance(dictionary, dict):
-        return '\n'.join([' says\n'.join([key, value]) for key, value in dictionary.items()])
-    return None
 
 def parse_html_br_tag_content(break_tag):
     """Get content of the next and previous sibling of a <br/> tag
@@ -204,7 +199,7 @@ def parse_comment_block(bs4_comment_block_object):
     
     PARSE_COMMENT_BLOCK_LOGGER.debug(bs4_comment_block_object.prettify())
 
-    save_dir = os.path.join(BASE_DIR, "comment_block")
+    save_dir = os.path.join(OUTPUT_DIR, "comment_block")
     if os.path.exists(save_dir) is False:
         os.mkdir(save_dir)
 
@@ -215,7 +210,7 @@ def parse_comment_block(bs4_comment_block_object):
         f.write("<div class='dropdown-divider'></div>")
 
     collected_quotes = OrderedDict()
-    return_val = namedtuple('ParsedComment', ['focus_user_comment', 'quotes_ordered_dict'])
+    return_val = namedtuple('ParsedComment', ['focus_user_ordered_dict', 'quotes_ordered_dict'])
     blockquotes = bs4_comment_block_object.find_all('blockquote')
 
     if blockquotes == []:
@@ -230,7 +225,7 @@ def parse_comment_block(bs4_comment_block_object):
             collected_quotes[commenter] = format_comments(blockquote).strip().strip("\n:")
             blockquote.decompose() # remove the block from the tree
 
-    return_val.focus_user_comment = format_comments(bs4_comment_block_object).strip().strip("\n:")
+    return_val.focus_user_ordered_dict = format_comments(bs4_comment_block_object).strip().strip("\n:")
     return_val.quotes_ordered_dict = collected_quotes
     return return_val
 
@@ -247,7 +242,25 @@ def sort_dictionary_by_value(dictionary_to_sort):
     sorted_dictionary_list = [i[0] for i in ordered_dictionary]
     return sorted_dictionary_list
 
-class PostCollector:
+class Nairaland(object):
+    """The base nairaland class
+    sections are held in a table with class='boards'
+    """
+    def __init__(self):
+        self.site_url = "https://www.nairaland.com/"
+
+        s = {}
+        soup = Ripper(self.site_url, parser='html5lib', refresh=True).soup
+        boards = soup.find("table", class_="boards")
+        links = boards.find_all('a')
+        for each in links:
+            s[each.text] = each.get('href')
+        self.sections = s
+
+    def __str__(self):
+        return "Nairaland base class"
+
+class PostCollector(Nairaland):
     """
     Scrap a nairaland post
 
@@ -258,13 +271,15 @@ class PostCollector:
     """
 
     def __str__(self):
-        return "PostCollector: {}".format(self.base_url)
+        return "PostCollector: {}".format(self.post_url)
 
-    def __init__(self, base_url, refresh=True):
-        self.save_path = os.path.join(BASE_DIR, 'page_rips_post')
-        self.base_url = base_url # Page (0) of the post
+    def __init__(self, post_url, refresh=True):
+        super().__init__()
+        self.save_path = os.path.join(OUTPUT_DIR, 'page_rips_post')
+        self.post_url = post_url # Page (0) of the post
         self.refresh = refresh
-        self.title = self.base_url.split('/')[-1]
+        self.title = self.post_url.split('/')[-1]
+        
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
 
@@ -273,7 +288,7 @@ class PostCollector:
         stop = 0
         while True:
             print("Whiling in a loop")
-            if self._check_if_url_exists_and_is_valid("{}/{}".format(self.base_url, stop)): # check if next url exists
+            if self._check_if_url_exists_and_is_valid("{}/{}".format(self.post_url, stop)): # check if next url exists
                 stop += 1
             else:
                 break
@@ -283,6 +298,10 @@ class PostCollector:
     def _check_if_url_exists_and_is_valid(url): # ConnectionError happens here
         r = requests.head(url)
         return r.status_code == 200
+
+    def get_title(self):
+        soup = Ripper(self.post_url, parser='html5lib', save_path=self.save_path, refresh=self.refresh).soup
+        return soup.find_all('h2')[0].text
 
     def _scrap_comment_for_single_page(self, page_url):
         """Return comments and commenters on a single post page
@@ -325,7 +344,7 @@ class PostCollector:
             parsed_block = parse_comment_block(comment_block)
 
             # If a moniker already exists (i.e. a user has already commented), append an integer to the
-            # present one to differentiate both.
+            # present one to differentiate them.
             if moniker not in return_val:
                 return_val[moniker] = parsed_block
             else:
@@ -338,7 +357,7 @@ class PostCollector:
         if __all == True: # since we're starting from a zero index, we have to subtract 1 from self.max_page()
             stop = self.max_page() - 1
         while start <= stop:
-            next_url = "{}/{}".format(self.base_url, start)
+            next_url = "{}/{}".format(self.post_url, start)
             next_page = self._scrap_comment_for_single_page(next_url)
             yield next_page
             start += 1
@@ -353,14 +372,15 @@ class PostCollector:
         return sorted(set(self.all_commenters()))
 
     def commenters_activity_summary(self):
-        """Return count of number of times a user commented on a post"""
+        """Return count of number of times a user commented on a post
+        To be finished..."""
         x = Counter(self.all_commenters())
         print(x)
         print("Sorted dict")
         print(sort_dictionary_by_value(x))
         return 
 
-class UserCommentHistory:
+class UserCommentHistory(Nairaland):
     """
     Grab a user's comment history
 
@@ -374,9 +394,10 @@ class UserCommentHistory:
         return "UserCommentHistory: {}".format(self.user_post_page)
 
     def __init__(self, nairaland_moniker, refresh=True):
+        super().__init__()
         self.refresh = refresh
         BASE_URL = 'https://www.nairaland.com'
-        self.save_path = os.path.join(BASE_DIR, 'page_rips_user')
+        self.save_path = os.path.join(OUTPUT_DIR, 'page_rips_user')
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
             
@@ -466,7 +487,7 @@ class UserCommentHistory:
             yield next_page
             start += 1
 
-class TopicCollector:
+class TopicCollector(Nairaland):
     """
     Collect topics from a section of nairaland
 
@@ -481,12 +502,13 @@ class TopicCollector:
     """
 
     def __str__(self):
-        return "TopicCollector: {}".format(self.base_url)
+        return "TopicCollector: {}".format(self.post_url)
 
     def __init__(self, section='politics'):
-        self.save_path = os.path.join(BASE_DIR, 'page_rips_section')
+        super().__init__()
+        self.save_path = os.path.join(OUTPUT_DIR, 'page_rips_section')
         self.section = section
-        self.base_url = 'http://www.nairaland.com/{}'.format(self.section)
+        self.post_url = 'https://www.nairaland.com/{}'.format(self.section)
         if os.path.exists(self.save_path) is False:
             os.mkdir(self.save_path)
 
@@ -498,7 +520,7 @@ class TopicCollector:
         int
             The number of pages in this section
         """
-        soup = Ripper(self.base_url, parser='html5lib', save_path=self.save_path, refresh=True).soup
+        soup = Ripper(self.post_url, parser='html5lib', save_path=self.save_path, refresh=True).soup
         number = re.search(r"\(of\s*(\d+)\s*pages\)", soup.text).group(1)
         return int(number)
 
@@ -548,7 +570,7 @@ class TopicCollector:
         if _maximum_pages:
             stop = self.max_pages() - 1
         while start <= stop:
-            next_url = '{}/{}'.format(self.base_url, start)
+            next_url = '{}/{}'.format(self.post_url, start)
             yield self._scrap_topics_for_a_single_page(next_url)
             start += 1
 
@@ -570,7 +592,7 @@ def export_user_comments_to_html(username=None, max_page=5):
     else:
         print("Now hacking {}'s comments to generate html file. Please wait a few minutes.".format(username))
         
-    destination_file = os.path.join(BASE_DIR, "comments_{}_{}_pages.html".format(username.lower(), max_page))
+    destination_file = os.path.join(OUTPUT_DIR, "comments_{}_{}_pages.html".format(username.lower(), max_page))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     with open(destination_file, 'a+', encoding='utf-8') as f:
@@ -628,7 +650,7 @@ def export_user_comments_to_html(username=None, max_page=5):
                 f.write('\t\t\t<h4>Subject: {}</h4>'.format(topic_plus_comment.topic))
                 
                 parsed_comment = topic_plus_comment.parsed_comment
-                f.write("\t\t\t<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_comment))
+                f.write("\t\t\t<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_ordered_dict))
                 quotes = parsed_comment.quotes_ordered_dict
                 
                 for username, comment in quotes.items():
@@ -697,7 +719,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
             active_sheet.cell(row=row_number, column=2, value=topic_plus_comment.topic)
             
             parsed_comment = topic_plus_comment.parsed_comment # a namedtuple instance. Multiple cells here
-            active_sheet.cell(row=row_number, column=3, value=parsed_comment.focus_user_comment)
+            active_sheet.cell(row=row_number, column=3, value=parsed_comment.focus_user_ordered_dict)
 
             quotes = parsed_comment.quotes_ordered_dict
             
@@ -707,7 +729,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
                 row_number += 1
             row_number += 1
 
-    destination_file = os.path.join(BASE_DIR, "comments_{}_{}_pages.xlsx".format(username.lower(), max_page))
+    destination_file = os.path.join(OUTPUT_DIR, "comments_{}_{}_pages.xlsx".format(username.lower(), max_page))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     work_book.alignment = ALIGNMENT
@@ -722,7 +744,7 @@ def export_topics_to_html(section='romance', start=0, stop=3):
     
     print("Now hacking {} to generate html file. Please wait a few minutes.".format(section))
         
-    destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.html".format(section, start, stop))
+    destination_file = os.path.join(OUTPUT_DIR, "{}_page_{}_{}_pages.html".format(section, start, stop))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     with open(destination_file, 'a+', encoding='utf-8') as f:
@@ -840,10 +862,37 @@ def export_topics_to_excel(section='romance', start=0, stop=3):
         
             row_number += 1 # advance to next row
 
-    destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.xlsx".format(section, start, stop))
+    destination_file = os.path.join(OUTPUT_DIR, "{}_page_{}_{}_pages.xlsx".format(section, start, stop))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     work_book.save(destination_file)
+    print("Done hacking")
+    os.startfile(destination_file)
+
+def export_post_ms_word(post_url, start=0, stop=2):
+    """Export post to word"""
+
+    print("Now hacking {} to generate docx file. Please wait a few minutes.".format(post_url))
+
+    i = 1    
+    document = Document()
+    post = PostCollector(post_url)
+    document.add_heading(post.get_title(), 0)
+    for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
+        document.add_heading('Page {}'.format(i), level=1)
+        for moniker, parsed_comment in page.items():
+            document.add_paragraph().add_run(moniker).bold = True
+            document.add_paragraph(parsed_comment.focus_user_ordered_dict)
+            for commenter, comment in parsed_comment.quotes_ordered_dict.items():
+                document.add_paragraph().add_run(commenter).italic = True
+                document.add_paragraph().add_run(comment).italic = True
+        document.add_page_break()
+        i += 1
+
+    destination_file = os.path.join(OUTPUT_DIR, "post_{}.docx".format(post.get_title()))
+    if os.path.exists(destination_file):
+        os.remove(destination_file)
+    document.save(destination_file)
     print("Done hacking")
     os.startfile(destination_file)
 

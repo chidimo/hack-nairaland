@@ -1,9 +1,11 @@
 
 # Hack [Nairaland](https://nairaland.com)
 
-This project is meant to be an exercise in web scraping. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. It also served as an exercise for me in the understanding of html page structure. It can for you too. I have documented some of the more common structures you'll find on the site.
+This project is meant to be a web scraping exercise. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. It also served as an exercise for me in the understanding of html page structure. It can for you too. I have documented some of the more common structures you'll find on the site.
 
 Several demos of this project in action are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
+
+There's also an attempt at analyzing post titles. This is done in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder.
 
 ## Functionalities offered by this project
 
@@ -14,24 +16,71 @@ Several demos of this project in action are provided in the accompanying `Hack N
 1. Save a post permanently by exporting it to word
 1. Pick two users and see their discussion thread (to do)
 
+## Nairaland sections
+
+The available sections and their urls are shown in the dictionary below. The format is `{section : section url}`
+
+```python
+{'Nairaland / General': '/nairaland',
+ 'Politics': '/politics',
+ 'Crime': '/crime',
+ 'Romance': '/romance',
+ 'Jobs/Vacancies': '/jobs',
+ 'Career': '/career',
+ 'Business': '/business',
+ 'Investment': '/investment',
+ 'NYSC': '/nysc',
+ 'Education': '/education',
+ 'Autos': '/autos',
+ 'Car Talk': '/cartalk',
+ 'Properties': '/properties',
+ 'Health': '/health',
+ 'Travel': '/travel',
+ 'Family': '/family',
+ 'Culture': '/culture',
+ 'Religion': '/religion',
+ 'Food': '/food',
+ 'Diaries': '/diaries',
+ 'Nairaland Ads': '/ads',
+ 'Pets': '/pets',
+ 'Agriculture': '/agriculture',
+ 'Entertainment': '/entertainment',
+ 'Jokes Etc': '/jokes',
+ 'TV/Movies': '/tv-movies',
+ 'Music/Radio': '/music-radio',
+ 'Celebrities': '/celebs',
+ 'Fashion': '/fashion',
+ 'Events': '/events',
+ 'Sports': '/sports',
+ 'Gaming': '/gaming',
+ 'Forum Games': '/forum-games',
+ 'Literature': '/literature',
+ 'Science/Technology': '/science',
+ 'Programming': '/programming',
+ 'Webmasters': '/webmasters',
+ 'Computers': '/computers',
+ 'Phones': '/phones',
+ 'Art, Graphics & Video': '/graphics-video',
+ 'Technology Market': '/techmarket'}
+```
+
 ## How to work with this notebook
 
-1. Download or clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
+1. Requirement: `python` and `pipenv` must be installed. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, you can install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
+1. Clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
-1. Issue the command `pipenv install`. This step requires that you have `python` and `pipenv` installed in your system
+1. Issue the command `pipenv install`. Wait for the environment to be recreated.
+1. Issue command `pipenv shell` to activate the environment.
 
-## Creating the environment on your own
+## Creating the `ipython` kernel
 
-1. To complete this step you have to delete both `Pipfile` and `Pipfile.lock`
+1. Optional: Inside your virtual environment, issue the following two commands (only needed if you created the virtual environment without using the `Pipfile` that comes with this repo.)
 
-1. Download or clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
-1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
-1. Issue the command `pipenv install`. This step requires that you have `python` and `pipenv` installed in your system
-1. Open `cmd.exe` and `cd` (i.e. navigate) into the folder
-1. Issue commands `pipenv install`. Wait for the environment to be created.
-1. When environment creation is done, activate it by issuing the command `pipenv shell`
-1. After environment activation, issue commands `pipenv install jupyter`, `pipenv install ipykernel`
-1. To create the custom `ipython` kernel, issue command
+    `pipenv install jupyter`
+
+    `pipenv install ipykernel`
+
+1. To create the custom `ipython` kernel, issue the following commands (This step is required)
 
     `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
 
@@ -40,36 +89,52 @@ Several demos of this project in action are provided in the accompanying `Hack N
 1. The `--user other-env` argument, value pair is optional. See [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for explanation
 1. Now when you reload your `ipython/jupyter` notebooks you should see the newly created kernel listed under kernels. You can see mine in the screenshot below.
 
-![Hack-nairaland kernel](hack-nairaland-kernel.png)
+![Hack-nairaland kernel in jupyter notebook](hack-nairaland-kernel.png)
 
-## Data Structures
+## Data Structure
 
 Every function has its own data structure. They are documented here for easy understanding of the program logic.
 
-### `parse_comment_block`
+### Functions
 
-Returns a [namedtuple](https://docs.python.org/3.6/library/collections.html#namedtuple-factory-function-for-tuples-with-named-fields)
+#### `def parse_html_br_tag_content(break tag)`
+
+#### `def join_tuples(list_of_tuples)`
+
+#### `format_comments(bs4_comment_block_object)`
+
+This function has a side effect of writing all comments it encounters to a file. This file can be found in `output/comment_block/` folder. 
+
+#### `def parse_comment_block(bs4_comment_block_object)`
 
 ```python
-namedtuple('ParsedComment', ['focus_user_comment', 'quotes_ordered_dictionary'])
+namedtuple('ParsedComment', ['focus_user_ordered_dict', 'quotes_ordered_dict'])
 
 # Internal structure
-('focus_user_comment', OrderedDict([('moniker', 'comment')]))
+('focus_user_ordered_dict', OrderedDict([('moniker', 'comment')]))
+
+('quotes_ordered_dict', OrderedDict([('moniker', 'comment')]))
 ```
 
-### `PostCollector()`
+### Classes
 
-This class is used to scrap a nairaland post.
+#### `Nairaland()`
 
-`PostCollector.scrap_comments_for_page_range()`
+This is the base class for all other classes defined here.
 
-Return type of `types.generator`. `Yield`s `OrderedDict()` objects. Where each has structure shown below.
+#### `PostCollector()`
+
+This class is employed in scraping a nairaland post.
+
+`PostCollector.scrap_comments_for_range_of_pages()`
+
+Return type of `types.generator`. It `yield`s `OrderedDict()`s, where each has the structure shown below.
 
 ```python
 OrderedDict(['moniker', parse_comment_block function object])
 ```
 
-### User `comment header` `<tr>` structure - Post view
+#### User `comment header` `<tr>` structure - Post view
 
 ```html
 <tr>
@@ -90,7 +155,7 @@ OrderedDict(['moniker', parse_comment_block function object])
 </tr>
 ```
 
-### User `comment text` `<tr>` structure - Post view
+#### User `comment text` `<tr>` structure - Post view
 
 ```html
 <tr>
@@ -115,6 +180,26 @@ OrderedDict(['moniker', parse_comment_block function object])
     </td>
 </tr>
 ```
+
+#### Unpacking post
+
+```python
+import textwrap
+
+post = hack.PostCollector('https://www.nairaland.com/4862847/presidency-well-teach-nursery-school')
+print(post.get_title())
+for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
+    for moniker, parsed_comment in page.items():
+        print(moniker)
+        print(parsed_comment.focus_user_ordered_dict)
+        for commenter, comment in parsed_comment.quotes_ordered_dict.items():
+            print(textwrap.indent(commenter, "    "))
+            print(textwrap.indent(comment, "    "))
+        print("\n", "*"*100, "\n")
+    print("+"*40, " new page ", "+"*40)
+```
+
+<hr>
 
 ## `UserCommentHistory()`
 
@@ -148,7 +233,7 @@ OrderedDict(['moniker', parse_comment_block function object])
 
 ### User comments text `<tr>` structure - Comment history view
 
-This section has a few other elements if you're logged in
+This section has a few other elements displayed for a logged in user
 
 ```html
 
@@ -197,7 +282,7 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(st
         print(topic_plus_comment.topic.upper()) # for differentiation only
 
         parsed_comment = topic_plus_comment.parsed_comment # a namedtuple instance
-        print(parsed_comment.focus_user_comment)
+        print(parsed_comment.focus_user_ordered_dict)
 
         quotes = parsed_comment.quotes_ordered_dict
         for username, comment in quotes.items():
@@ -207,6 +292,8 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(st
         print("_"*100)
     print("\n\n")
 ```
+
+<hr>
 
 ## TopicCollector()
 
@@ -267,7 +354,22 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
         print()
 ```
 
+### Output functions
+
+#### `export_user_comments_to_html(username=None, max_page=5)`
+
+#### `export_user_comments_to_excel(username=None, max_page=5)`
+
+#### `export_topics_to_html(section='romance', start=0, stop=3)`
+
+#### `export_topics_to_excel(section='romance', start=0, stop=3)`
+
+
+## Libraries used in this project
+
+1. Openpyxl
+1. Python docx
+
 ## To do
 
-1. Show list of all sections
 1. Fix scroll to top link
