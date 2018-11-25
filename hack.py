@@ -2,9 +2,9 @@ import re
 import os
 import sys
 import codecs
-import pathlib
 import logging
 
+from pathlib import Path
 from operator import itemgetter
 from itertools import filterfalse
 from collections import OrderedDict, namedtuple, Counter
@@ -21,13 +21,10 @@ from pywebber import Ripper
 
 logging.disable(logging.CRITICAL)
 
-BASE_DIR = pathlib.Path().resolve()
-OUTPUT_DIR = pathlib.Path.joinpath(BASE_DIR, 'output')
-if not pathlib.Path.exists(OUTPUT_DIR):
-    pathlib.Path.mkdir(OUTPUT_DIR)
-
-ALIGNMENT = Alignment(horizontal='left') # Alignment object for openpyxl
-
+BASE_DIR = Path().resolve()
+OUTPUT_DIR = Path.joinpath(BASE_DIR, 'output')
+if not Path.exists(OUTPUT_DIR):
+    Path.mkdir(OUTPUT_DIR)
 
 class Error(Exception):
     pass
@@ -732,7 +729,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
     destination_file = os.path.join(OUTPUT_DIR, "comments_{}_{}_pages.xlsx".format(username.lower(), max_page))
     if os.path.exists(destination_file):
         os.remove(destination_file)
-    work_book.alignment = ALIGNMENT
+
     work_book.save(destination_file)
     print("Done hacking")
     os.startfile(destination_file)
