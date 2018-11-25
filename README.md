@@ -1,9 +1,9 @@
 
 # Hack [Nairaland](https://nairaland.com) - an exercise on web scraping.
 
-## What you can do with this notebook
+## Functionalities offered by this project
 
-1. Export all comments ever made by a user to an excel file (other formats may be added).
+1. Export all comments ever made by a user to an excel file (other formats can easily be added).
 1. Export all post titles from a section within a range that you specify to an excel file (other formats may be added).
 1. Get all unique commenters on a post
 1. Get all commenters on a post and their comment frequency
@@ -250,13 +250,15 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(st
 
 ```python
 import textwrap
-for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(end=1):
+
+for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(start=0, stop=1):
     for topic in list(page):
         print(topic.poster)
         print(textwrap.indent(topic.title, "    "))
         print(textwrap.indent(topic.url, "    "))
-        print(textwrap.indent(str(topic.comments), "    "), " comments") # str is necessary because of the way textwrap works
-        print(textwrap.indent(topic.views), "    ")
+        print(textwrap.indent(topic.comments, "    "), " comments")
+        print(textwrap.indent(topic.views, "    "), " views")
+        print(textwrap.indent(topic.last_commenter, "    "), " commented last")
         print(textwrap.indent(topic.other_meta), "    ")
         print()
 ```

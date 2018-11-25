@@ -512,7 +512,7 @@ class TopicCollector:
         post_table = soup.find('table', id=False, summary=False)
 
         for td in post_table.find_all('td', id=True):
-            Post = namedtuple('Post', ['poster', 'title', 'url', 'comments', 'views', 'other_meta'])
+            Post = namedtuple('Post', ['poster', 'title', 'url', 'comments', 'views', 'last_commenter', 'other_meta'])
 
             title_component = td.find('b').find('a', href=True)
             Post.title = title_component.text.strip()
@@ -522,10 +522,11 @@ class TopicCollector:
             meta_component = td.find('span', class_='s').find_all('b')
 
             Post.poster = meta_component[0].text.strip()
-            Post.comments = int(meta_component[1].text.strip()) # count includes the post itself
+            Post.comments = meta_component[1].text.strip() # count includes the post itself
             # Join all other meta as a single string
             Post.views = meta_component[2].text.strip()
-            Post.other_meta = " ".join([each.text.strip() for each in meta_component[3:]])
+            Post.last_commenter = meta_component[-1].text.strip()
+            Post.other_meta = " ".join([each.text.strip() for each in meta_component[3:-1]])
             yield Post
 
     def scrap_topics_for_range_of_pages(self, start=0, stop=0, _maximum_pages=False):
@@ -564,7 +565,7 @@ def export_user_comments_to_html(username=None, max_page=5):
         print("No username provided. Ending")
         return
     else:
-        print("Now hacking nairaland. Please wait a few minutes.")
+        print("Now hacking nairaland to generate your html file. Please wait a few minutes.")
         
     destination_file = os.path.join(BASE_DIR, "comments_{}_{}_pages.html".format(username.lower(), max_page))
     if os.path.exists(destination_file):
@@ -636,6 +637,7 @@ def export_user_comments_to_html(username=None, max_page=5):
 
         # continue up page structure
         f.write("\t\t\t<p class='float-right'><a href='#topNav' class='smooth-scroll'>Back to top</a></p>\n") # back to top
+        f.write("\t\t\t<p class='float-left'>Template by <a href='https://bootswatch.com/superhero/' class='smooth-scroll'>Bootswatch</a></p>\n")
         f.write("\t\t</div>\n")
         # jquery smooth scroll
         f.write("<script>\n")
@@ -659,15 +661,14 @@ def export_user_comments_to_html(username=None, max_page=5):
     print("Done hacking")
     os.startfile(destination_file)
 
-def export_topics_to_html(section='romance', start_page=0, stop_page=3):
+def export_topics_to_html(section='romance', start=0, stop=3):
     """
-    Writes all topics between start and end of a section to excel.
-    Same output as titles_links_metadata() but written to a excel file
+    Writes all topics between start and end of a section to a html file
     """
     
-    print("Now hacking nairaland. Please wait a few minutes.")
+    print("Now hacking nairaland to generate your html file. Please wait a few minutes.")
         
-    destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.html".format(section, start_page, stop_page))
+    destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.html".format(section, start, stop))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     with open(destination_file, 'a+', encoding='utf-8') as f:
@@ -714,20 +715,21 @@ def export_topics_to_html(section='romance', start_page=0, stop_page=3):
         
         i = 1
         topics = TopicCollector(section=section)
-        for page in topics.scrap_topics_for_range_of_pages(start=start_page, stop=stop_page):
+        for page in topics.scrap_topics_for_range_of_pages(start=start, stop=stop):
 
             f.write("\t\t\t<div id='js-scroll-target{}'>\n".format(i)) # div for targeting scroll
             f.write("\t\t\t<h2><a href='#js-scroll-target{0}' class='smooth-scroll'>Page {1}</a></h2>".format(i+1, i))
             i += 1
             
             for topic in list(page):
-                f.write("\t\t\t<h3>Topic: <a href='{}' target='_blank'>{}</a></h3>".format(topic.url, topic.title))
-                f.write("\t\t\t<h4>Poster: {}</h4>".format(topic.poster))
-                f.write("\t\t\t<h5>{} <i class='fas fa-comment'></i> | {} <i class='fas fa-eye'></i> | Others: {}</h5>".format(topic.comments, topic.views, topic.other_meta))
+                f.write("\t\t\t<h3><a href='{}' target='_blank'>{}</a></h3>".format(topic.url, topic.title))
+                f.write("\t\t\t<h4>Posted by <a href='https://nairaland.com/{0}/topics' target='_blank'>{0}</a></h4>".format(topic.poster))
+                f.write("\t\t\t<h5>{} <i class='fas fa-comment'></i> | {} <i class='fas fa-eye'></i> | Last commenter: {} | Others: {}</h5>".format(topic.comments, topic.views, topic.last_commenter, topic.other_meta))
                 f.write("\t\t\t<div class='dropdown-divider' style='border:1px solid white;'></div>\n")
             f.write("\t\t\t</div>\n") # finish scroll div
 
         f.write("\t\t\t<p class='float-right'><a href='#topNav' class='smooth-scroll'>Back to top</a></p>\n")
+        f.write("\t\t\t<p class='float-left'>Template by <a href='https://bootswatch.com/superhero/' target='_blank'>Bootswatch</a></p>\n")
         f.write("\t\t</div>\n")
         # jquery smooth scroll
         f.write("<script>\n")
@@ -750,6 +752,44 @@ def export_topics_to_html(section='romance', start_page=0, stop_page=3):
         # finish up page structure
         f.write("\t</body>\n")
         f.write("</html>")
+    print("Done hacking")
+    os.startfile(destination_file)
+
+def export_topics_to_excel(section='romance', start=0, stop=3):
+    """Writes all topics between start and end of a section to excel"""
+    
+    print("Now hacking nairaland to generate your excel file. Please wait a few minutes.")
+        
+    work_book = OP.Workbook()
+    active_sheet = work_book.active
+    active_sheet.title = section
+    
+    active_sheet['A1'] = 'POSTER'
+    active_sheet['B1'] = 'TITLE'
+    active_sheet['C1'] = 'LINK'
+    active_sheet['D1'] = 'COMMENTS'
+    active_sheet['E1'] = 'VIEWS'
+    active_sheet['F1'] = 'LAST COMMENTER'
+    active_sheet['G1'] = 'OTHERS'
+
+    row_number = 2
+    
+    for page in TopicCollector(section=section).scrap_topics_for_range_of_pages(start=start, stop=stop):
+        for topic in list(page):
+            active_sheet.cell(row=row_number, column=1, value=topic.poster)
+            active_sheet.cell(row=row_number, column=2, value=topic.title)
+            active_sheet.cell(row=row_number, column=3, value=topic.url)
+            active_sheet.cell(row=row_number, column=4, value=topic.comments)
+            active_sheet.cell(row=row_number, column=5, value=topic.views)
+            active_sheet.cell(row=row_number, column=6, value=topic.last_commenter)
+            active_sheet.cell(row=row_number, column=7, value=topic.other_meta)
+        
+            row_number += 1 # advance to next row
+
+    destination_file = os.path.join(BASE_DIR, "{}_page_{}_{}_pages.xlsx".format(section, start, stop))
+    if os.path.exists(destination_file):
+        os.remove(destination_file)
+    work_book.save(destination_file)
     print("Done hacking")
     os.startfile(destination_file)
 
