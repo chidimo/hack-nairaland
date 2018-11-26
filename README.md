@@ -7,7 +7,7 @@ I have documented some of the more common structures you'll find on the site. I 
 
 ## Challenges
 
-1. The major challenge occurs when trying to scrap posts. Its quite hard to represent the original as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `br` element and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
+1. The major challenge I encountered was how to scrap posts. Its quite hard to get a scrap that exactly matches original text as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `br` element and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
 1. Purposeful tradeoffs have been made in some cases, for example, in the case where a user quotes several others in one comment block, the `parse_comment_block` function ignores order when parsing the comments. It simply collects all of the user's comments into one block on top, then, all of the quoted user's comments into another block at the bottom. Which means that the ordering as you would see such a comment on nairaland is lost. But I made that decision because, from my experience using nairaland, such cases are not common.
 
 ## How to work with this project
@@ -20,20 +20,13 @@ I have documented some of the more common structures you'll find on the site. I 
 
 ## Creating the `hack-nairaland` kernel
 
-1. Optional: Inside your virtual environment, issue the following two commands (only needed if you created the virtual environment without using the `Pipfile` that comes with this repo.)
-
-    `pipenv install jupyter`
-
-    `pipenv install ipykernel`
-
-1. To create the custom `ipython` kernel, issue the following commands (This step is required)
+To create the custom `ipython` kernel, issue the following commands (This step is required)
 
     `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
 
     `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
 
-1. The `--user other-env` argument, value pair is optional. See [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for explanation
-1. Now when you reload your `ipython/jupyter` notebooks you should see the newly created kernel listed under kernels. You can see some kernels I've created in the screenshot below.
+See this [gist](https://gist.github.com/chidimo/fa24e4172649e99eb1912c921117c7f6) for more details.
 
 ![Hack-nairaland kernel in jupyter notebook](hack-nairaland-kernel.png)
 
