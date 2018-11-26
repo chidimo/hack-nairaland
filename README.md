@@ -5,6 +5,22 @@ This project started as an exercise on web scraping as a way to understand how `
 
 I have documented some of the most common structures you'll find on the site. I decided to update it and release it publicly as part of my [portfolio](http://parousia.pythonanywhere.com/portfolio/).
 
+## Output functions
+
+The following functions are available for exporting data.
+
+### `export_user_comments_to_html(username=None, max_page=5)`
+
+### `export_user_comments_to_excel(username=None, max_page=5)`
+
+### `export_topics_to_html(section='politics', start=0, stop=3)`
+
+### `export_topics_to_excel(section='politics', start=0, stop=3)`
+
+### `export_post_docx(post_url, start=0, stop=2, _all_pages=False)`
+
+### `export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False)`
+
 ## Challenges
 
 1. The major challenge I encountered was how to scrap posts. Its quite hard to get a scrap that exactly matches original text as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `br` element and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
@@ -376,20 +392,6 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
         print(textwrap.indent(topic.other_meta, "    "))
         print()
 ```
-
-### Output functions
-
-#### `export_user_comments_to_html(username=None, max_page=5)`
-
-#### `export_user_comments_to_excel(username=None, max_page=5)`
-
-#### `export_topics_to_html(section='romance', start=0, stop=3)`
-
-#### `export_topics_to_excel(section='romance', start=0, stop=3)`
-
-#### `export_post_docx(post_url, start=0, stop=2, _all_pages=False)`
-
-#### `export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False)`
 
 ## To do
 
