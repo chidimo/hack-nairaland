@@ -871,7 +871,7 @@ def export_topics_to_excel(section='romance', start=0, stop=3):
     print("Done hacking")
     os.startfile(destination_file)
 
-def export_post_ms_word(post_url, start=0, stop=2, _all_pages=False):
+def export_post_docx(post_url, start=0, stop=2, _all_pages=False):
     """Export post to word"""
 
     print("Now hacking {} to generate docx file. Please wait a few minutes.".format(post_url))
