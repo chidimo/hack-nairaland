@@ -7,19 +7,33 @@ I have documented some of the most common structures you'll find on the site. I 
 
 ## Output functions
 
-The following functions are available for exporting data.
+The following functions are available for exporting data. Several demos are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
 
 ### `export_user_comments_to_html(username=None, max_page=5)`
 
+Export all comments made by a user to html file. You may select how many pages of comments you want to grab.
+
 ### `export_user_comments_to_excel(username=None, max_page=5)`
+
+Export all comments made by a user to excel file. You may select how many pages of comments you want to grab.
 
 ### `export_topics_to_html(section='politics', start=0, stop=3)`
 
+Export all post titles from a section within a range that you specify to html file.
+
 ### `export_topics_to_excel(section='politics', start=0, stop=3)`
+
+Export all post titles from a section within a range that you specify to excel file.
 
 ### `export_post_docx(post_url, start=0, stop=2, _all_pages=False)`
 
+Save a post permanently by exporting it to `docx` format
+
 ### `export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False)`
+
+Save a post permanently by exporting it to `markdown` format
+
+There's also an attempt at analyzing post titles using `pandas`. This analysis can be found in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages. As of the time of writing, the site reports that there over `8,000` pages of titles on the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly go higher if you have good internet and hardware (aka RAM). If you're interested in text analysis, you can think of this project as the missing nairaland.com `API`.
 
 ## Challenges
 
@@ -35,7 +49,7 @@ The following functions are available for exporting data.
 1. Issue the command `pipenv shell` to activate the environment.
 1. The next step is to create the `ipython` kernel used by this project. My own is shown in the image below for reference.
 
-## Creating the `hack-nairaland` kernel
+### Creating the `hack-nairaland` kernel
 
 To create the custom `ipython` kernel, issue the following commands (This step is required)
 
@@ -46,17 +60,6 @@ To create the custom `ipython` kernel, issue the following commands (This step i
 See this [gist](https://gist.github.com/chidimo/fa24e4172649e99eb1912c921117c7f6) for more details.
 
 ![Hack-nairaland kernel in jupyter notebook](img/hack-nairaland-kernel.png)
-
-## Functionalities
-
-Several demos of this project in action are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
-
-1. Export all comments made by a user to html or excel file. You may select how many pages of comments you want to grab.
-1. Export all post titles from a section within a range that you specify to html or excel.
-1. Get s of all unique commenters on a post
-1. Get all commenters on a post and their comment frequency
-1. Save a post permanently by exporting it to `docx` format
-1. There's also an attempt at analyzing post titles using `pandas`. This analysis can be found in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages. As of the time of writing, the site reports that there over `8,000` pages of titles on the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly go higher if you have good internet and hardware (aka RAM).
 
 ## Nairaland sections
 
@@ -393,7 +396,14 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
         print()
 ```
 
+## Project core libraries
+
+1. pywebber
+1. pandas
+
 ## To do
 
 1. Fix scroll to top link
 1. Grab nairaland icons from page
+1. Function to get usernames of all unique commenters on a post
+1. Function to get all commenters on a post and their comment frequency
