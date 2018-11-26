@@ -44,7 +44,9 @@ Several demos of this project in action are provided in the accompanying `Hack N
 
 ## Nairaland sections
 
-The available sections and their urls are shown in the dictionary below. The format is `{section : section url}`
+Each of the classes `PostCollector`, ``, and `` have a `.sections` property that is inherited from the base `Nairaland` class. This property returns a python `dictionary` of `{section : section url}`. The complete output is shown below.
+
+![nairaland sections](img/nairaland_sections.png)
 
 ```python
 {'Nairaland / General': '/nairaland',
@@ -90,7 +92,7 @@ The available sections and their urls are shown in the dictionary below. The for
  'Technology Market': '/techmarket'}
 ```
 
-## Data Structure
+## Data Structures
 
 The return value of every function has its own data structure. They are documented here for better understanding of the program logic.
 
@@ -98,7 +100,7 @@ The return value of every function has its own data structure. They are document
 
 #### `def get_left_right_of_html_br_element(br_element)`
 
-This function checks a single `html <br>` element and determines if it has texts before and/or after it, then it returns those texts as a `list` of `[content before <br> element, content after <br> element]`
+This function checks a single html `<br>` element and determines if it has texts before and/or after it, then it returns those texts as a `list` of `[content before <br> element, content after <br> element]`
 
 #### `def join_tuples(list_of_tuples)`
 
@@ -106,9 +108,9 @@ Joins a list of `(2-tuples)` into a single string.
 
 #### `format_comments(bs4_comment_block_object)`
 
-Takes a block of comment as a `BeautifulSoup4` object and formats it into proper paragraphs.
+Takes a block of `BeautifulSoup4` object comment and formats it into proper paragraphs.
 
-This function has a side effect of writing all comments it encounters to a file. This file can be found in `comment-blockS/` folder. It acts as a kind of log of every comment block that is encountered as you work with this project. View as raw html to see what the comment blocks look like.
+This function has a side effect of writing all comments it encounters to a single file. This file can be found in `comment-blocks/` folder. It acts as a kind of log of every comment block that is encountered as you work with this project. View as raw html to see what the actual html blocks look like.
 
 #### `def parse_comment_block(bs4_comment_block_object)`
 
@@ -139,7 +141,7 @@ Return type of `types.generator`. It `yield`s `OrderedDict()`s, where each has t
 OrderedDict(['', parse_comment_block function object])
 ```
 
-#### User comment header `<tr>` structure in *post view*
+##### User comment header `<tr>` structure in *post view*
 
 ![User comment header <tr> structure](img/user_comment_header_tr_structure_post_view.png)
 
@@ -162,7 +164,7 @@ OrderedDict(['', parse_comment_block function object])
 </tr>
 ```
 
-#### User comment text `<tr>` structure in *post view*
+##### User comment text `<tr>` structure in *post view*
 
 ![User comment text <tr> structure](img/user_comment_text_tr_structure_post_view.png)
 
@@ -190,7 +192,7 @@ OrderedDict(['', parse_comment_block function object])
 </tr>
 ```
 
-#### Unpacking post
+##### Unpacking post
 
 ```python
 import textwrap
@@ -212,7 +214,7 @@ for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2)):
 
 #### `UserCommentHistory()`
 
-### User comment header `<tr>` structure in *comment history* view
+##### User comment header `<tr>` structure in *comment history* view
 
 ![User comment header <tr> structure in comment history view](img/user_comment_header_tr_structure_comment_history_view.png)
 
@@ -240,7 +242,7 @@ for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2)):
 </tr>
 ```
 
-### User comments text `<tr>` structure in *comment history* view
+##### User comments text `<tr>` structure in *comment history* view
 
 ![User comment text <tr> structure in comment history view](img/user_comment_text_tr_structure_comment_history_view.png)
 
@@ -270,7 +272,7 @@ This section has a few other elements displayed for a logged in user
 </tr>
 ```
 
-## A supposed anomaly I found in the table
+##### A supposed anomaly I found in the table
 
 It contains nothing. Just a blank row.
 
@@ -282,7 +284,7 @@ It contains nothing. Just a blank row.
 </tr>
 ```
 
-### Unpacking user comments history
+##### Unpacking user comments history
 
 ```python
 import textwrap
@@ -306,9 +308,9 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_range_of_user
 
 <hr>
 
-## TopicCollector()
+### TopicCollector()
 
-### Section topics `<tr>` structure
+##### Section topics `<tr>` structure
 
 ![Section topics <tr> structure](img/section_topics_tr_structure.png)
 

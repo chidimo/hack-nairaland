@@ -128,7 +128,7 @@ def join_br_tuples(list_of_tuples):
     previous_sibling point to the same string.
     """
 #     remove_nones = [[filter(lambda x: x is not None, each)] for each in list_of_tuples]
-    
+
 #     # a more explicit way
 #     remove_nones2 = []
 #     for each_tuple in list_of_tuples:
@@ -176,7 +176,7 @@ def format_comments(bs4_comment_block_object):
 
 def parse_comment_block(bs4_comment_block_object):
     """Return quoted string.
-    
+
     Parameters
     -----------
     BeautifulSoup
@@ -188,13 +188,13 @@ def parse_comment_block(bs4_comment_block_object):
         quoted string content
     bs4_comment_block_object : BeautifulSoup
         Input comment block stripped of all <b> tags
-        
+
     Notes
     ------
     Every comment block must be parsed with this function.
     This function also has a side effect of producing a properly formatted html of all comments it encounters.
     """
-    
+
     PARSE_COMMENT_BLOCK_LOGGER.debug(bs4_comment_block_object.prettify())
 
     save_dir = os.path.join(BASE_DIR, "comment-blocks")
@@ -232,7 +232,7 @@ def parse_comment_block(bs4_comment_block_object):
 def sort_dictionary_by_value(dictionary_to_sort):
     """
     Return list of dictionary keys where the items are sorted on the values in descending order.
-    
+
     e.g sort_dictionary_by_value({5:'goat', 10:'cat', 1:'dog'}) returns [5, 1, 10] since the values
     sort to ['goat', 'dog', 'cat']
     """
@@ -246,18 +246,15 @@ assert sort_dictionary_by_value({5:'goat', 10:'cat', 1:'dog'}) == [5, 1, 10]
 
 class Nairaland(object):
     """The base nairaland class
-    sections are held in a table with class='boards'
+    sections are contained in a table with class='boards'
     """
     def __init__(self):
         self.site_url = "https://www.nairaland.com/"
 
-        s = {}
         soup = Ripper(self.site_url, parser='html5lib', refresh=True).soup
         boards = soup.find("table", class_="boards")
         links = boards.find_all('a')
-        for each in links:
-            s[each.text] = each.get('href')
-        self.sections = s
+        self.sections = {link.text : link.get('href') for each in links}
 
     def __str__(self):
         return "Nairaland base class"
@@ -281,7 +278,7 @@ class PostCollector(Nairaland):
         self.post_url = post_url # Page (0) of the post
         self.refresh = refresh
         self.title = self.post_url.split('/')[-1]
-        
+
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
 
@@ -335,7 +332,7 @@ class PostCollector(Nairaland):
                     pass
                 username = "Nobody" # set to nobody after exhausting all options. We cannot use finally in this case
 
-            comment_classes = ['l w pd', 'l w pd nocopy'] # comment div should be either of these classes            
+            comment_classes = ['l w pd', 'l w pd nocopy'] # comment div should be either of these classes
             for class_ in comment_classes:
                 try:
                     comment_block = rows[i+1].find('td', id=True, class_=class_).find('div', class_='narrow')
@@ -379,7 +376,7 @@ class PostCollector(Nairaland):
         print(x)
         print("Sorted dict")
         print(sort_dictionary_by_value(x))
-        return 
+        return
 
 class UserCommentHistory(Nairaland):
     """
@@ -401,7 +398,7 @@ class UserCommentHistory(Nairaland):
         self.save_path = os.path.join(OUTPUT_DIR, 'page_rips_user')
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
-            
+
         p = '{}/{}'.format(BASE_URL, nairaland_username.lower())
         if self._check_if_url_exists_and_is_valid(p):
             self.user_profile_page = p
@@ -413,7 +410,7 @@ class UserCommentHistory(Nairaland):
     def _check_if_url_exists_and_is_valid(url):
         r = requests.head(url)
         return r.status_code == 200
-    
+
     def user_profile(self):
         """Returns a dictionary of the user's profile"""
         pass
@@ -447,7 +444,7 @@ class UserCommentHistory(Nairaland):
 
         output_ordered_dict = OrderedDict()
         for i in range(0, len(rows), 2): # go to every second row
-            
+
             topic_classes = ['bold l pu', 'bold l pu nocopy']
             for class_ in topic_classes:
                 try:
@@ -586,23 +583,23 @@ def export_user_comments_to_html(username=None, max_page=5):
         Maximum page count for user's comments (Default is 5 pages of comments)
         loop breaks if we exceed actual count
     """
-    
+
     if not username:
         print("No username provided. Ending")
         return
     else:
         print("Now hacking {}'s comments to generate html file. Please wait a few minutes.".format(username))
-        
+
     destination_file = os.path.join(OUTPUT_DIR, "comments_{}_{}_pages.html".format(username.lower(), max_page))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     with open(destination_file, 'a+', encoding='utf-8') as f:
-        
+
         # html scaffold
         f.write("<html xmlns='http://www.w3.org/1999/xhtml'>\n")
         f.write("\t<head>\n")
 
-        
+
         # resources
         f.write("\t\t<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/superhero/bootstrap.min.css'>\n")
         f.write("\t\t<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>\n")
@@ -649,11 +646,11 @@ def export_user_comments_to_html(username=None, max_page=5):
             for section, topic_plus_comment in page.items():
                 f.write("\t\t\t<h3>Section: {}</h3>\n".format(section.split('**')[0])) # remove the ** separating section and index
                 f.write('\t\t\t<h4>Subject: {}</h4>'.format(topic_plus_comment.topic))
-                
+
                 parsed_comment = topic_plus_comment.parsed_comment
                 f.write("\t\t\t<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_comment))
                 quotes = parsed_comment.quotes_ordered_dict
-                
+
                 for username, comment in quotes.items():
                     f.write("\t\t\t\t<h4 class='text-info'>{}</h4>\n".format(username))
                     f.write("\t\t\t\t<p class='text-primary'><em>{}</em></p>\n".format(comment))
@@ -701,29 +698,29 @@ def export_user_comments_to_excel(username=None, max_page=5):
         return
     else:
         print("Now hacking {}'s comments to generate excel file. Please wait a few minutes.".format(username))
-        
+
     work_book = OP.Workbook()
     active_sheet = work_book.active
     active_sheet.title = username
-    
+
     active_sheet['A1'] = "SECTION"
     active_sheet['B1'] = "TOPIC"
     active_sheet['C1'] = 'USER_COMMENT'
     active_sheet['D1'] = "QUOTED_USER"
-    
+
     row_number = 2
 
     for page in list(UserCommentHistory(username).scrap_comments_for_range_of_user_pages(start=0, stop=1)):
         for section, topic_plus_comment in page.items():
-            
+
             active_sheet.cell(row=row_number, column=1, value=section)
             active_sheet.cell(row=row_number, column=2, value=topic_plus_comment.topic)
-            
+
             parsed_comment = topic_plus_comment.parsed_comment # a namedtuple instance. Multiple cells here
             active_sheet.cell(row=row_number, column=3, value=parsed_comment.focus_user_comment)
 
             quotes = parsed_comment.quotes_ordered_dict
-            
+
             for _username, comment in quotes.items():
                 user_plus_comment = "{}: {}".format(_username, comment)
                 active_sheet.cell(row=row_number, column=4, value=user_plus_comment)
@@ -742,18 +739,18 @@ def export_topics_to_html(section='romance', start=0, stop=3):
     """
     Writes all topics between start and end of a section to a html file
     """
-    
+
     print("Now hacking {} to generate html file. Please wait a few minutes.".format(section))
-        
+
     destination_file = os.path.join(OUTPUT_DIR, "{}_page_{}_{}_pages.html".format(section, start, stop))
     if os.path.exists(destination_file):
         os.remove(destination_file)
     with open(destination_file, 'a+', encoding='utf-8') as f:
-        
+
         # html scaffold
         f.write("<html xmlns='http://www.w3.org/1999/xhtml'>\n")
         f.write("\t<head>\n")
-        
+
         # resources
         f.write("\t\t<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootswatch/4.1.3/superhero/bootstrap.min.css'>\n")
         f.write("\t\t<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>\n")
@@ -789,7 +786,7 @@ def export_topics_to_html(section='romance', start=0, stop=3):
         f.write("\t\t</ol>\n")
         f.write("\t\t</nav>\n")
         # end breadcrumb
-        
+
         i = 1
         topics = TopicCollector(section=section)
         for page in topics.scrap_topics_for_range_of_pages(start=start, stop=stop):
@@ -797,7 +794,7 @@ def export_topics_to_html(section='romance', start=0, stop=3):
             f.write("\t\t\t<div id='js-scroll-target{}'>\n".format(i)) # div for targeting scroll
             f.write("\t\t\t<h2><a href='#js-scroll-target{0}' class='smooth-scroll'>Page {1}</a></h2>".format(i+1, i))
             i += 1
-            
+
             for topic in list(page):
                 f.write("\t\t\t<h3><a href='{}' target='_blank'>{}</a></h3>".format(topic.url, topic.title))
                 f.write("\t\t\t<h4>Posted by <a href='https://nairaland.com/{0}/topics' target='_blank'>{0}</a></h4>".format(topic.poster))
@@ -834,13 +831,13 @@ def export_topics_to_html(section='romance', start=0, stop=3):
 
 def export_topics_to_excel(section='romance', start=0, stop=3):
     """Writes all topics between start and end of a section to excel"""
-    
+
     print("Now hacking {} to generate excel file. Please wait a few minutes.".format(section))
-        
+
     work_book = OP.Workbook()
     active_sheet = work_book.active
     active_sheet.title = section
-    
+
     active_sheet['A1'] = 'POSTER'
     active_sheet['B1'] = 'TITLE'
     active_sheet['C1'] = 'LINK'
@@ -850,7 +847,7 @@ def export_topics_to_excel(section='romance', start=0, stop=3):
     active_sheet['G1'] = 'OTHERS'
 
     row_number = 2
-    
+
     for page in TopicCollector(section=section).scrap_topics_for_range_of_pages(start=start, stop=stop):
         for topic in list(page):
             active_sheet.cell(row=row_number, column=1, value=topic.poster)
@@ -860,7 +857,7 @@ def export_topics_to_excel(section='romance', start=0, stop=3):
             active_sheet.cell(row=row_number, column=5, value=topic.views)
             active_sheet.cell(row=row_number, column=6, value=topic.last_commenter)
             active_sheet.cell(row=row_number, column=7, value=topic.other_meta)
-        
+
             row_number += 1 # advance to next row
 
     destination_file = os.path.join(OUTPUT_DIR, "{}_page_{}_{}_pages.xlsx".format(section, start, stop))
@@ -875,7 +872,7 @@ def export_post_docx(post_url, start=0, stop=2, _all_pages=False):
 
     print("Now hacking {} to generate docx file. Please wait a few minutes.".format(post_url))
 
-    i = 1    
+    i = 1
     document = Document()
     post = PostCollector(post_url)
     document.add_heading(post.get_title(), 0)
@@ -908,7 +905,7 @@ def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
         os.remove(destination_file)
 
     with open(destination_file, 'a+', encoding='utf-8') as f:
-        i = 1    
+        i = 1
         f.write('# {}\n\n'.format(post.get_title()))
         f.write('[{0}]({0})\n\n'.format(post_url))
         for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
