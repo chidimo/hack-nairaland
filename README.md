@@ -28,7 +28,7 @@ To create the custom `ipython` kernel, issue the following commands (This step i
 
 See this [gist](https://gist.github.com/chidimo/fa24e4172649e99eb1912c921117c7f6) for more details.
 
-![Hack-nairaland kernel in jupyter notebook](hack-nairaland-kernel.png)
+![Hack-nairaland kernel in jupyter notebook](img/hack-nairaland-kernel.png)
 
 ## Functionalities
 
@@ -36,7 +36,7 @@ Several demos of this project in action are provided in the accompanying `Hack N
 
 1. Export all comments made by a user to html or excel file. You may select how many pages of comments you want to grab.
 1. Export all post titles from a section within a range that you specify to html or excel.
-1. Get monikers of all unique commenters on a post
+1. Get s of all unique commenters on a post
 1. Get all commenters on a post and their comment frequency
 1. Save a post permanently by exporting it to `docx` format
 1. There's also an attempt at analyzing post titles using `pandas`. This analysis can be found in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages. As of the time of writing, the site reports that there over `8,000` pages of titles on the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly go higher if you have good internet and hardware (aka RAM).
@@ -91,15 +91,17 @@ The available sections and their urls are shown in the dictionary below. The for
 
 ## Data Structure
 
-Every function has its own data structure. They are documented here for easy understanding of the program logic.
+The return value of every function has its own data structure. They are documented here for better understanding of the program logic.
 
 ### Functions
 
 #### `def get_left_right_of_html_br_element(br_element)`
 
-This function checks a single `html <br>` element and determines if it has texts before and/or after it, then it returns those texts as a `list` of `[before tag, after tag]`
+This function checks a single `html <br>` element and determines if it has texts before and/or after it, then it returns those texts as a `list` of `[content before <br> element, content after <br> element]`
 
 #### `def join_tuples(list_of_tuples)`
+
+Joins a list of `(2-tuples)` into a single string.
 
 #### `format_comments(bs4_comment_block_object)`
 
@@ -113,9 +115,9 @@ This function has a side effect of writing all comments it encounters to a file.
 namedtuple('ParsedComment', ['focus_user_comment', 'quotes_ordered_dict'])
 
 # Internal structure
-('focus_user_comment', OrderedDict([('moniker', 'comment')]))
+('focus_user_comment', OrderedDict([('', 'comment')]))
 
-('quotes_ordered_dict', OrderedDict([('moniker', 'comment')]))
+('quotes_ordered_dict', OrderedDict([('', 'comment')]))
 ```
 
 ### Classes
@@ -133,10 +135,12 @@ This class is employed in scraping a nairaland post.
 Return type of `types.generator`. It `yield`s `OrderedDict()`s, where each has the structure shown below.
 
 ```python
-OrderedDict(['moniker', parse_comment_block function object])
+OrderedDict(['', parse_comment_block function object])
 ```
 
-#### User `comment header` `<tr>` structure - Post view
+#### User comment header `<tr>` structure in *post view*
+
+![User comment header <tr> structure](img/user_comment_header_tr_structure_post_view.png)
 
 ```html
 <tr>
@@ -144,9 +148,9 @@ OrderedDict(['moniker', parse_comment_block function object])
         <a name="68136427"></a>
         <a name="msg68136427"></a>
         <a name="4539839.6"></a>
-        <a href="/4539839/agu-aina-dropped-nigerias-final#68136427">Re:Topic.</a>
+        <a href="/4539839/agu-aina-dropped-nigerias-final#68136427">Re: Topic</a>
         by
-        <a href="/moniker" class="user" title="Location: Detroit">moniker</a>
+        <a href="/" class="user" title="Location: Detroit">username</a>
         (
         <span class="m or f">m or f</span>
         ):
@@ -157,7 +161,9 @@ OrderedDict(['moniker', parse_comment_block function object])
 </tr>
 ```
 
-#### User `comment text` `<tr>` structure - Post view
+#### User comment text `<tr>` structure in *post view*
+
+![User comment text <tr> structure](img/user_comment_text_tr_structure_post_view.png)
 
 ```html
 <tr>
@@ -165,19 +171,19 @@ OrderedDict(['moniker', parse_comment_block function object])
         <div class="narrow">
             <blockquote>
                 <a href="/post/68136377">
-                    <b>moniker</b>
+                    <b> of quoted commenter</b>
                 </a>
                 :
                 <br>
-                comment
+                Quoted comment text
             </blockquote>
             <br>
             <br>
-            comment
+            Owner comment text
         </div>
         <p class="s">
             <b id="lpt68136427">n Likes </b>
-            <b id="shb68136427">n Share</b>
+            <b id="shb68136427">m Share</b>
         </p>
     </td>
 </tr>
@@ -191,8 +197,8 @@ import textwrap
 post = hack.PostCollector('https://www.nairaland.com/4862847/presidency-well-teach-nursery-school')
 print(post.get_title())
 for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
-    for moniker, parsed_comment in page.items():
-        print(moniker)
+    for , parsed_comment in page.items():
+        print()
         print(parsed_comment.focus_user_comment)
         for commenter, comment in parsed_comment.quotes_ordered_dict.items():
             print(textwrap.indent(commenter, "    "))
@@ -203,9 +209,11 @@ for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
 
 <hr>
 
-## `UserCommentHistory()`
+#### `UserCommentHistory()`
 
-### User `comment header` `<tr>` structure - Comment history view
+### User comment header `<tr>` structure in *comment history* view
+
+![User comment header <tr> structure in comment history view](img/user_comment_header_tr_structure_comment_history_view.png)
 
 ```html
 <tr>
@@ -214,9 +222,7 @@ for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
         <a name=""></a>
         <a name=""></a>
         <img src="">
-        <a href="/section-url">Section name</a>
-        /
-        <a href="/0000/title">Re: Post title</a>
+        <a href="/section-url">Section name</a> / <a href="/0000/title">Re: Post title</a>
         by
         <a href="/username" class="user" title="Location:location">username</a>
         (
@@ -233,7 +239,9 @@ for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
 </tr>
 ```
 
-### User comments text `<tr>` structure - Comment history view
+### User comments text `<tr>` structure in *comment history* view
+
+![User comment text <tr> structure in comment history view](img/user_comment_text_tr_structure_comment_history_view.png)
 
 This section has a few other elements displayed for a logged in user
 
@@ -244,14 +252,14 @@ This section has a few other elements displayed for a logged in user
         <div class="narrow">
             <blockquote> <!-- each blockquote represents a quoted comment -->
                 <a href="/post/00000000">
-                    <b>Moniker</b>
+                    <b> of quoted user</b>
                 </a>
                 :
                 <br> <!-- there'll be as many of these as the number of enter keys a user presses-->
-                Some comment
+                Quoted user comment
                 <img src="" alt="represents an emoticon" border="0" class="faces">
             </blockquote>
-            some comment
+            Owner comment text
         </div>
         <p class="s">
             <b id="lpt61581477">n Likes </b>
@@ -307,7 +315,7 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(st
         <a name="2792995"></a>
         <img src="/icons/sticky.gif">
         <b>
-            <a href="/2792995/nairaland-says-no-secessionists">Topic title</a>
+            <a href="/2792995/some-text">Topic title</a>
         </b>
         <a href="topic-full-url/1">(1)</a>
         <a href="topic-full-url/2">(2)</a>
@@ -331,7 +339,7 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(st
             <b>2015</b> <!-- Visible for posts older than current year -->
             (
             <b>
-                <a href="/user_moniker">user_moniker</a>
+                <a href="/user_">user_</a>
             </b>
             )
         </span>

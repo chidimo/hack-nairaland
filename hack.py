@@ -330,11 +330,11 @@ class PostCollector(Nairaland):
             topic_classes = ['bold l pu', 'bold l pu nocopy'] # topic div should be either of these classes
             for class_ in topic_classes:
                 try:
-                    moniker = rows[i].find('td', class_=class_).find('a', href=True, class_=True).text.strip()
+                     = rows[i].find('td', class_=class_).find('a', href=True, class_=True).text.strip()
                     break
                 except AttributeError:
                     pass
-                moniker = "Nobody" # set to nobody after exhausting all options. We cannot use finally in this case
+                 = "Nobody" # set to nobody after exhausting all options. We cannot use finally in this case
 
             comment_classes = ['l w pd', 'l w pd nocopy'] # comment div should be either of these classes            
             for class_ in comment_classes:
@@ -345,13 +345,13 @@ class PostCollector(Nairaland):
                     pass
             parsed_block = parse_comment_block(comment_block)
 
-            # If a moniker already exists (i.e. a user has already commented), append an integer to the
+            # If a  already exists (i.e. a user has already commented), append an integer to the
             # present one to differentiate them.
-            if moniker not in output_ordered_dict:
-                output_ordered_dict[moniker] = parsed_block
+            if  not in output_ordered_dict:
+                output_ordered_dict[] = parsed_block
             else:
-                moniker = "{}**{}".format(moniker, i)
-                output_ordered_dict[moniker] = parsed_block
+                 = "{}**{}".format(, i)
+                output_ordered_dict[] = parsed_block
         return output_ordered_dict
 
     def scrap_comments_for_range_of_post_pages(self, start=0, stop=1, _all_pages=False):
@@ -366,7 +366,7 @@ class PostCollector(Nairaland):
 
     def all_commenters(self):
         """Return list of all commenters on a post"""
-        # Remember we user ** to separate a moniker and the number of times it is appearing on a post
+        # Remember we user ** to separate a  and the number of times it is appearing on a post
         return sorted([key.split("**")[0] for each in list(self.scrap_comments_for_range_of_post_pages(stop=self.max_page())) for key, value in each.items()])
 
     def unique_commenters(self):
@@ -395,7 +395,7 @@ class UserCommentHistory(Nairaland):
     def __str__(self):
         return "UserCommentHistory: {}".format(self.user_post_page)
 
-    def __init__(self, nairaland_moniker, refresh=True):
+    def __init__(self, nairaland_, refresh=True):
         super().__init__()
         self.refresh = refresh
         BASE_URL = 'https://www.nairaland.com'
@@ -403,10 +403,10 @@ class UserCommentHistory(Nairaland):
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
             
-        p = '{}/{}'.format(BASE_URL, nairaland_moniker.lower())
+        p = '{}/{}'.format(BASE_URL, nairaland_.lower())
         if self._check_if_url_exists_and_is_valid(p):
             self.user_profile_page = p
-            self.user_post_page = '{}/{}/posts'.format(BASE_URL, nairaland_moniker.lower())
+            self.user_post_page = '{}/{}/posts'.format(BASE_URL, nairaland_.lower())
         else:
             raise NonExistentNairalandUser("This user does not exist on nairaland.")
 
@@ -881,8 +881,8 @@ def export_post_docx(post_url, start=0, stop=2, _all_pages=False):
     post = PostCollector(post_url)
     document.add_paragraph(post_url)
     for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
-        for moniker, parsed_comment in page.items():
-            document.add_paragraph().add_run(moniker).bold = True
+        for , parsed_comment in page.items():
+            document.add_paragraph().add_run().bold = True
             document.add_paragraph(parsed_comment.focus_user_comment)
             for commenter, comment in parsed_comment.quotes_ordered_dict.items():
                 document.add_paragraph().add_run(commenter).italic = True
@@ -912,8 +912,8 @@ def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
         f.write('# {}\n\n'.format(post.get_title()))
         f.write('[{0}]({0})\n\n'.format(post_url))
         for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
-            for moniker, parsed_comment in page.items():
-                f.write('**{}**\n\n'.format(moniker))
+            for , parsed_comment in page.items():
+                f.write('**{}**\n\n'.format())
                 f.write('{}\n\n'.format(parsed_comment.focus_user_comment))
 
                 for commenter, comment in parsed_comment.quotes_ordered_dict.items():
