@@ -289,7 +289,6 @@ class PostCollector(Nairaland):
         """Returns the maximum number of pages of comments, starting from a zero index."""
         stop = 0
         while True:
-            print("Whiling in a loop")
             if self._check_if_url_exists_and_is_valid("{}/{}".format(self.post_url, stop)): # check if next url exists
                 stop += 1
             else:
@@ -330,11 +329,11 @@ class PostCollector(Nairaland):
             topic_classes = ['bold l pu', 'bold l pu nocopy'] # topic div should be either of these classes
             for class_ in topic_classes:
                 try:
-                     = rows[i].find('td', class_=class_).find('a', href=True, class_=True).text.strip()
+                    username = rows[i].find('td', class_=class_).find('a', href=True, class_=True).text.strip()
                     break
                 except AttributeError:
                     pass
-                 = "Nobody" # set to nobody after exhausting all options. We cannot use finally in this case
+                username = "Nobody" # set to nobody after exhausting all options. We cannot use finally in this case
 
             comment_classes = ['l w pd', 'l w pd nocopy'] # comment div should be either of these classes            
             for class_ in comment_classes:
@@ -345,13 +344,13 @@ class PostCollector(Nairaland):
                     pass
             parsed_block = parse_comment_block(comment_block)
 
-            # If a  already exists (i.e. a user has already commented), append an integer to the
+            # If a username already exists (i.e. a user has already commented), append an integer to the
             # present one to differentiate them.
-            if  not in output_ordered_dict:
-                output_ordered_dict[] = parsed_block
+            if username not in output_ordered_dict:
+                output_ordered_dict[username] = parsed_block
             else:
-                 = "{}**{}".format(, i)
-                output_ordered_dict[] = parsed_block
+                username = "{}**{}".format(username, i)
+                output_ordered_dict[username] = parsed_block
         return output_ordered_dict
 
     def scrap_comments_for_range_of_post_pages(self, start=0, stop=1, _all_pages=False):
@@ -366,7 +365,7 @@ class PostCollector(Nairaland):
 
     def all_commenters(self):
         """Return list of all commenters on a post"""
-        # Remember we user ** to separate a  and the number of times it is appearing on a post
+        # Remember we user ** to separate a username and the number of times it is appearing on a post
         return sorted([key.split("**")[0] for each in list(self.scrap_comments_for_range_of_post_pages(stop=self.max_page())) for key, value in each.items()])
 
     def unique_commenters(self):
@@ -395,7 +394,7 @@ class UserCommentHistory(Nairaland):
     def __str__(self):
         return "UserCommentHistory: {}".format(self.user_post_page)
 
-    def __init__(self, nairaland_, refresh=True):
+    def __init__(self, nairaland_username, refresh=True):
         super().__init__()
         self.refresh = refresh
         BASE_URL = 'https://www.nairaland.com'
@@ -403,10 +402,10 @@ class UserCommentHistory(Nairaland):
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
             
-        p = '{}/{}'.format(BASE_URL, nairaland_.lower())
+        p = '{}/{}'.format(BASE_URL, nairaland_username.lower())
         if self._check_if_url_exists_and_is_valid(p):
             self.user_profile_page = p
-            self.user_post_page = '{}/{}/posts'.format(BASE_URL, nairaland_.lower())
+            self.user_post_page = '{}/{}/posts'.format(BASE_URL, nairaland_username.lower())
         else:
             raise NonExistentNairalandUser("This user does not exist on nairaland.")
 
@@ -725,13 +724,13 @@ def export_user_comments_to_excel(username=None, max_page=5):
 
             quotes = parsed_comment.quotes_ordered_dict
             
-            for username, comment in quotes.items():
-                user_plus_comment = "{}: {}".format(username, comment)
+            for _username, comment in quotes.items():
+                user_plus_comment = "{}: {}".format(_username, comment)
                 active_sheet.cell(row=row_number, column=4, value=user_plus_comment)
                 row_number += 1
             row_number += 1
 
-    destination_file = os.path.join(OUTPUT_DIR, "comments_{}_{}_pages.xlsx".format(username.lower(), max_page))
+    destination_file = os.path.join(OUTPUT_DIR, "{}_comments_{}_pages.xlsx".format(username, max_page))
     if os.path.exists(destination_file):
         os.remove(destination_file)
 
@@ -879,10 +878,11 @@ def export_post_docx(post_url, start=0, stop=2, _all_pages=False):
     i = 1    
     document = Document()
     post = PostCollector(post_url)
+    document.add_heading(post.get_title(), 0)
     document.add_paragraph(post_url)
     for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
-        for , parsed_comment in page.items():
-            document.add_paragraph().add_run().bold = True
+        for _username, parsed_comment in page.items():
+            document.add_paragraph().add_run(_username).bold = True
             document.add_paragraph(parsed_comment.focus_user_comment)
             for commenter, comment in parsed_comment.quotes_ordered_dict.items():
                 document.add_paragraph().add_run(commenter).italic = True
@@ -912,8 +912,8 @@ def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
         f.write('# {}\n\n'.format(post.get_title()))
         f.write('[{0}]({0})\n\n'.format(post_url))
         for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
-            for , parsed_comment in page.items():
-                f.write('**{}**\n\n'.format())
+            for _username, parsed_comment in page.items():
+                f.write('**{}**\n\n'.format(_username))
                 f.write('{}\n\n'.format(parsed_comment.focus_user_comment))
 
                 for commenter, comment in parsed_comment.quotes_ordered_dict.items():

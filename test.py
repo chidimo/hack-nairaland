@@ -127,16 +127,16 @@ class TestPostCollector(unittest.TestCase):
         self.assertIsInstance(single_page, OrderedDict)
 
     @mock.patch('hack.Ripper')
-    def test_scrap_comments_for_range_of_pages(self, mocked_ripper):
+    def test_scrap_comments_for_range_of_post_pages(self, mocked_ripper):
         """Test length and type of object returned"""
         obj = hack.PostCollector(self.base_url)
-        page_range = obj.scrap_comments_for_range_of_pages(0, 3, False)
+        page_range = obj.scrap_comments_for_range_of_post_pages(0, 3, False)
         self.assertIsInstance(page_range, types.GeneratorType)
         self.assertEqual(len(list(page_range)), 4)
 
         # Set maximum page to 3
         obj.max_page = mock.MagicMock(return_value=3)
-        page_range = obj.scrap_comments_for_range_of_pages(0, 0, True)
+        page_range = obj.scrap_comments_for_range_of_post_pages(0, 0, True)
         self.assertEqual(len(list(page_range)), 3)
 
 if __name__ == '__main__':

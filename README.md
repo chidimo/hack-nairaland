@@ -1,30 +1,31 @@
 
 # Hack [Nairaland](https://nairaland.com)
 
-This project was meant to be a web scraping exercise. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. I started working on it just a little over a year ago when I was just starting out with trying to figure out how `HTML` pages worked.
+This project started as an exercise on web scraping as a way to understand how `HTML` pages worked. Please do not use it to overload the nairaland servers. You could always pull in your data in chunks as I've demonstrated in the `politics-analysis` jupyter notebook. I'd advise you get your data at around midnight (Nigerian time), when there's likely to be less traffic.
 
-I have documented some of the more common structures you'll find on the site. I decided to update it and release it publicly as part of my portfolio.
+I have documented some of the most common structures you'll find on the site. I decided to update it and release it publicly as part of my [portfolio](http://parousia.pythonanywhere.com/portfolio/).
 
 ## Challenges
 
 1. The major challenge I encountered was how to scrap posts. Its quite hard to get a scrap that exactly matches original text as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `br` element and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
 1. Purposeful tradeoffs have been made in some cases, for example, in the case where a user quotes several others in one comment block, the `parse_comment_block` function ignores order when parsing the comments. It simply collects all of the user's comments into one block on top, then, all of the quoted user's comments into another block at the bottom. Which means that the ordering as you would see such a comment on nairaland is lost. But I made that decision because, from my experience using nairaland, such cases are not common.
 
-## How to work with this project
+## Acquiring and working with this project
 
-1. Requirement: `python` and `pipenv` must be installed. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, you can install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
-1. Clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
-1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
+1. Requirement: `python` and `pipenv` must be installed on your computer. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, you can install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
+1. Clone (aka grab your copy) the `github` repo with this link `git clone https://github.com/chidimo/hack-nairaland.git`.
+1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded `hack-nairaland` folder
 1. Issue the command `pipenv install`. Wait for the environment to be recreated.
-1. Issue command `pipenv shell` to activate the environment.
+1. Issue the command `pipenv shell` to activate the environment.
+1. The next step is to create the `ipython` kernel used by this project. My own is shown in the image below for reference.
 
 ## Creating the `hack-nairaland` kernel
 
 To create the custom `ipython` kernel, issue the following commands (This step is required)
 
-    `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
+1. `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
 
-    `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
+1. `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
 
 See this [gist](https://gist.github.com/chidimo/fa24e4172649e99eb1912c921117c7f6) for more details.
 
@@ -130,7 +131,7 @@ This is the base class for all other classes defined here.
 
 This class is employed in scraping a nairaland post.
 
-`PostCollector.scrap_comments_for_range_of_pages()`
+`PostCollector.scrap_comments_for_range_of_post_pages()`
 
 Return type of `types.generator`. It `yield`s `OrderedDict()`s, where each has the structure shown below.
 
@@ -196,9 +197,9 @@ import textwrap
 
 post = hack.PostCollector('https://www.nairaland.com/4862847/presidency-well-teach-nursery-school')
 print(post.get_title())
-for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
-    for , parsed_comment in page.items():
-        print()
+for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2)):
+    for _username, parsed_comment in page.items():
+        print(_username)
         print(parsed_comment.focus_user_comment)
         for commenter, comment in parsed_comment.quotes_ordered_dict.items():
             print(textwrap.indent(commenter, "    "))
@@ -286,7 +287,7 @@ It contains nothing. Just a blank row.
 ```python
 import textwrap
 
-for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(start=0, stop=1)):
+for page in list(UserCommentHistory("preccy69").scrap_comments_for_range_of_user_pages(start=0, stop=1)):
     for section, topic_plus_comment in page.items():
         print("\n\n", "*"*40, section, "*"*40)
         print(topic_plus_comment.topic.upper()) # for differentiation only
@@ -360,7 +361,7 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
         print(textwrap.indent(topic.comments, "    "), " comments")
         print(textwrap.indent(topic.views, "    "), " views")
         print(textwrap.indent(topic.last_commenter, "    "), " commented last")
-        print(textwrap.indent(topic.other_meta), "    ")
+        print(textwrap.indent(topic.other_meta, "    "))
         print()
 ```
 
