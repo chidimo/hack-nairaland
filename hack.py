@@ -880,7 +880,6 @@ def export_post_ms_word(post_url, start=0, stop=2, _all_pages=False):
     document = Document()
     post = PostCollector(post_url)
     document.add_paragraph(post_url)
-    f.write('[{0}]({0})\n\n'.format(post_url))
     for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
         for moniker, parsed_comment in page.items():
             document.add_paragraph().add_run(moniker).bold = True
