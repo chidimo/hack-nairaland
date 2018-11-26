@@ -354,9 +354,9 @@ class PostCollector(Nairaland):
                 output_ordered_dict[moniker] = parsed_block
         return output_ordered_dict
 
-    def scrap_comments_for_range_of_pages(self, start=0, stop=1, __all=False):
+    def scrap_comments_for_range_of_post_pages(self, start=0, stop=1, _all_pages=False):
         """Get contents for a range of pages from start to stop"""
-        if __all == True: # since we're starting from a zero index, we have to subtract 1 from self.max_page()
+        if _all_pages: # since we're starting from a zero index, we have to subtract 1 from self.max_page()
             stop = self.max_page() - 1
         while start <= stop:
             next_url = "{}/{}".format(self.post_url, start)
@@ -367,7 +367,7 @@ class PostCollector(Nairaland):
     def all_commenters(self):
         """Return list of all commenters on a post"""
         # Remember we user ** to separate a moniker and the number of times it is appearing on a post
-        return sorted([key.split("**")[0] for each in list(self.scrap_comments_for_range_of_pages(stop=self.max_page())) for key, value in each.items()])
+        return sorted([key.split("**")[0] for each in list(self.scrap_comments_for_range_of_post_pages(stop=self.max_page())) for key, value in each.items()])
 
     def unique_commenters(self):
         """Return list of unique commenters on a post"""
@@ -479,9 +479,9 @@ class UserCommentHistory(Nairaland):
                 output_ordered_dict[section] = Comm
         return output_ordered_dict
 
-    def scrap_comments_for_range_of_pages(self, start=0, stop=0, _maximum_pages=False):
+    def scrap_comments_for_range_of_user_pages(self, start=0, stop=0, _all_pages=False):
         """Get contents for a range of pages from start to stop """
-        if _maximum_pages:
+        if _all_pages:
             stop = self.max_pages() - 1
         while start <= stop:
             next_url = "{}/{}".format(self.user_post_page, start)
@@ -556,7 +556,7 @@ class TopicCollector(Nairaland):
             Post.other_meta = " ".join([each.text.strip() for each in meta_component[3:-1]])
             yield Post
 
-    def scrap_topics_for_range_of_pages(self, start=0, stop=0, _maximum_pages=False):
+    def scrap_topics_for_range_of_pages(self, start=0, stop=0, _all_pages=False):
         """Yield all topics between 'start' and 'end' for a section
 
         Parameters
@@ -569,7 +569,7 @@ class TopicCollector(Nairaland):
         tuple
             same yields as for titles()
         """
-        if _maximum_pages:
+        if _all_pages:
             stop = self.max_pages() - 1
         while start <= stop:
             next_url = '{}/{}'.format(self.post_url, start)
@@ -641,7 +641,7 @@ def export_user_comments_to_html(username=None, max_page=5):
         # end breadcrumb
 
         i = 1
-        for page in list(UserCommentHistory(username).scrap_comments_for_range_of_pages(stop=max_page)):
+        for page in list(UserCommentHistory(username).scrap_comments_for_range_of_user_pages(stop=max_page)):
 
             f.write("\t\t\t<div id='js-scroll-target{}'>\n".format(i)) # div for targeting scroll
             f.write("\t\t\t<h2><a href='#js-scroll-target{0}' class='smooth-scroll'>Page {1}</a></h2>".format(i+1, i))
@@ -714,7 +714,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
     
     row_number = 2
 
-    for page in list(UserCommentHistory(username).scrap_comments_for_range_of_pages(start=0, stop=1)):
+    for page in list(UserCommentHistory(username).scrap_comments_for_range_of_user_pages(start=0, stop=1)):
         for section, topic_plus_comment in page.items():
             
             active_sheet.cell(row=row_number, column=1, value=section)
@@ -871,7 +871,7 @@ def export_topics_to_excel(section='romance', start=0, stop=3):
     print("Done hacking")
     os.startfile(destination_file)
 
-def export_post_ms_word(post_url, start=0, stop=2):
+def export_post_ms_word(post_url, start=0, stop=2, _all_pages=False):
     """Export post to word"""
 
     print("Now hacking {} to generate docx file. Please wait a few minutes.".format(post_url))
@@ -880,8 +880,7 @@ def export_post_ms_word(post_url, start=0, stop=2):
     document = Document()
     post = PostCollector(post_url)
     document.add_heading(post.get_title(), 0)
-    for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
-        document.add_heading('Page {}'.format(i), level=1)
+    for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
         for moniker, parsed_comment in page.items():
             document.add_paragraph().add_run(moniker).bold = True
             document.add_paragraph(parsed_comment.focus_user_comment)
@@ -895,6 +894,32 @@ def export_post_ms_word(post_url, start=0, stop=2):
     if os.path.exists(destination_file):
         os.remove(destination_file)
     document.save(destination_file)
+    print("Done hacking")
+    os.startfile(destination_file)
+
+def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
+    """Export post to markdown"""
+
+    print("Now hacking {} to generate markdown file. Please wait a few minutes.".format(post_url))
+
+    post = PostCollector(post_url)
+    destination_file = os.path.join(OUTPUT_DIR, "post_{}.md".format(post.get_title()))
+    if os.path.exists(destination_file):
+        os.remove(destination_file)
+
+    with open(destination_file, 'a+', encoding='utf-8') as f:
+        i = 1    
+        f.write('# {}\n\n'.format(post.get_title()))
+        for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
+            for moniker, parsed_comment in page.items():
+                f.write('**{}**\n\n'.format(moniker))
+                f.write('{}\n\n'.format(parsed_comment.focus_user_comment))
+
+                for commenter, comment in parsed_comment.quotes_ordered_dict.items():
+                    f.write('\t{}\n\n'.format(commenter))
+                    f.write('\t{}\n\n'.format(comment))
+            i += 1
+
     print("Done hacking")
     os.startfile(destination_file)
 
