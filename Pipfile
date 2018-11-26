@@ -12,6 +12,7 @@ openpyxl = "*"
 "html5lib" = "*"
 pandas = "*"
 xlrd = "*"
+"nose2" = "*"
 
 [dev-packages]
 pylint = "*"

@@ -1,21 +1,52 @@
 
 # Hack [Nairaland](https://nairaland.com)
 
-This project is meant to be a web scraping exercise. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. It also served as an exercise for me in the understanding of html page structure. It can for you too. I have documented some of the more common structures you'll find on the site.
+This project was meant to be a web scraping exercise. Please use gently to avoid overloading the nairaland servers. I'd advise you work with it at night time, when there's less traffic. I started working on it just a little over a year ago when I was just starting out with trying to figure out how `HTML` pages worked.
 
-The major challenge in scraping the site is the multitude of `<br>` tags it contains. Every press of the `ENTER` key adds a new one and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, I was able to make get meaningful content, though its not 100% okay.
+I have documented some of the more common structures you'll find on the site. I decided to update it and release it publicly as part of my portfolio.
 
-Several demos of this project in action are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
+## Challenges
 
-There's also an attempt at analyzing post titles. This is done in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder.
+1. The major challenge occurs when trying to scrap posts. Its quite hard to represent the original as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `br` element and it makes it hard to actually grab the text contained therein. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
+1. Purposeful tradeoffs have been made in some cases, for example, in the case where a user quotes several others in one comment block, the `parse_comment_block` function ignores order when parsing the comments. It simply collects all of the user's comments into one block on top, then, all of the quoted user's comments into another block at the bottom. Which means that the ordering as you would see such a comment on nairaland is lost. But I made that decision because, from my experience using nairaland, such cases are not common.
+
+## How to work with this project
+
+1. Requirement: `python` and `pipenv` must be installed. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, you can install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
+1. Clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
+1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
+1. Issue the command `pipenv install`. Wait for the environment to be recreated.
+1. Issue command `pipenv shell` to activate the environment.
+
+## Creating the `hack-nairaland` kernel
+
+1. Optional: Inside your virtual environment, issue the following two commands (only needed if you created the virtual environment without using the `Pipfile` that comes with this repo.)
+
+    `pipenv install jupyter`
+
+    `pipenv install ipykernel`
+
+1. To create the custom `ipython` kernel, issue the following commands (This step is required)
+
+    `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
+
+    `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
+
+1. The `--user other-env` argument, value pair is optional. See [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for explanation
+1. Now when you reload your `ipython/jupyter` notebooks you should see the newly created kernel listed under kernels. You can see some kernels I've created in the screenshot below.
+
+![Hack-nairaland kernel in jupyter notebook](hack-nairaland-kernel.png)
 
 ## Functionalities
+
+Several demos of this project in action are provided in the accompanying `Hack Nairaland` `jupyter notebook`. You should start from there.
 
 1. Export all comments made by a user to html or excel file. You may select how many pages of comments you want to grab.
 1. Export all post titles from a section within a range that you specify to html or excel.
 1. Get monikers of all unique commenters on a post
 1. Get all commenters on a post and their comment frequency
 1. Save a post permanently by exporting it to `docx` format
+1. There's also an attempt at analyzing post titles using `pandas`. This analysis can be found in the accompanying `politics-analysis` `jupyter notebook`. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages. As of the time of writing, the site reports that there over `8,000` pages of titles on the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly go higher if you have good internet and hardware (aka RAM).
 
 ## Nairaland sections
 
@@ -65,33 +96,6 @@ The available sections and their urls are shown in the dictionary below. The for
  'Technology Market': '/techmarket'}
 ```
 
-## How to work with this notebook
-
-1. Requirement: `python` and `pipenv` must be installed. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, you can install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
-1. Clone the `bitbucket` repo (`git clone https://parousiaic@bitbucket.org/parousiaic/hack-nairaland.git`)
-1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded folder
-1. Issue the command `pipenv install`. Wait for the environment to be recreated.
-1. Issue command `pipenv shell` to activate the environment.
-
-## Creating the `hack-nairaland` kernel
-
-1. Optional: Inside your virtual environment, issue the following two commands (only needed if you created the virtual environment without using the `Pipfile` that comes with this repo.)
-
-    `pipenv install jupyter`
-
-    `pipenv install ipykernel`
-
-1. To create the custom `ipython` kernel, issue the following commands (This step is required)
-
-    `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
-
-    `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
-
-1. The `--user other-env` argument, value pair is optional. See [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for explanation
-1. Now when you reload your `ipython/jupyter` notebooks you should see the newly created kernel listed under kernels. You can see some kernels I've created in the screenshot below.
-
-![Hack-nairaland kernel in jupyter notebook](hack-nairaland-kernel.png)
-
 ## Data Structure
 
 Every function has its own data structure. They are documented here for easy understanding of the program logic.
@@ -113,10 +117,10 @@ This function has a side effect of writing all comments it encounters to a file.
 #### `def parse_comment_block(bs4_comment_block_object)`
 
 ```python
-namedtuple('ParsedComment', ['focus_user_ordered_dict', 'quotes_ordered_dict'])
+namedtuple('ParsedComment', ['focus_user_comment', 'quotes_ordered_dict'])
 
 # Internal structure
-('focus_user_ordered_dict', OrderedDict([('moniker', 'comment')]))
+('focus_user_comment', OrderedDict([('moniker', 'comment')]))
 
 ('quotes_ordered_dict', OrderedDict([('moniker', 'comment')]))
 ```
@@ -196,7 +200,7 @@ print(post.get_title())
 for page in list(post.scrap_comments_for_range_of_pages(start=0, stop=2)):
     for moniker, parsed_comment in page.items():
         print(moniker)
-        print(parsed_comment.focus_user_ordered_dict)
+        print(parsed_comment.focus_user_comment)
         for commenter, comment in parsed_comment.quotes_ordered_dict.items():
             print(textwrap.indent(commenter, "    "))
             print(textwrap.indent(comment, "    "))
@@ -287,7 +291,7 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_page_range(st
         print(topic_plus_comment.topic.upper()) # for differentiation only
 
         parsed_comment = topic_plus_comment.parsed_comment # a namedtuple instance
-        print(parsed_comment.focus_user_ordered_dict)
+        print(parsed_comment.focus_user_comment)
 
         quotes = parsed_comment.quotes_ordered_dict
         for username, comment in quotes.items():

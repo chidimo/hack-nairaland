@@ -25,6 +25,7 @@ BASE_DIR = Path().resolve()
 OUTPUT_DIR = Path.joinpath(BASE_DIR, 'output')
 if not Path.exists(OUTPUT_DIR):
     Path.mkdir(OUTPUT_DIR)
+TEST_DIR = Path.joinpath(BASE_DIR, 'test-dir')
 
 class Error(Exception):
     pass
@@ -106,7 +107,7 @@ def get_left_right_of_html_br_element(br_element):
     # return ("*{}*, *{}*".format(return_value[0], return_value[1]))
     return tuple(return_value)
 
-def join_tuples(list_of_tuples):
+def join_br_tuples(list_of_tuples):
     """Join a list of tuples into a list eliminating None and
     duplicates.
 
@@ -166,11 +167,11 @@ def format_comments(bs4_comment_block_object):
 
     if br_elements == []:
         return bs4_comment_block_object.text
-    for tag in br_elements:
-        content = get_left_right_of_html_br_element(tag) # returns a tuple
+    for el in br_elements:
+        content = get_left_right_of_html_br_element(el) # returns a tuple
         comment.append(content)
 
-    return_string = join_tuples(comment)
+    return_string = join_br_tuples(comment)
     return return_string
 
 def parse_comment_block(bs4_comment_block_object):
@@ -201,15 +202,16 @@ def parse_comment_block(bs4_comment_block_object):
         os.mkdir(save_dir)
 
     # Side effect
-    save = os.path.join(save_dir, "all_page_comments.html")
+    save = os.path.join(save_dir, "comment-block-collection.html")
     with codecs.open(save, 'a+', encoding='utf-8') as f:
         f.write(bs4_comment_block_object.prettify())
-        f.write("<div class='dropdown-divider'></div>")
+        f.write("End of file.\n\n")
 
     collected_quotes = OrderedDict()
-    return_val = namedtuple('ParsedComment', ['focus_user_ordered_dict', 'quotes_ordered_dict'])
+    output_named_tuple = namedtuple('ParsedComment', ['focus_user_comment', 'quotes_ordered_dict'])
     blockquotes = bs4_comment_block_object.find_all('blockquote')
 
+    # collect comments from other users which were quoted by the focus user
     if blockquotes == []:
         pass
     else:
@@ -222,9 +224,10 @@ def parse_comment_block(bs4_comment_block_object):
             collected_quotes[commenter] = format_comments(blockquote).strip().strip("\n:")
             blockquote.decompose() # remove the block from the tree
 
-    return_val.focus_user_ordered_dict = format_comments(bs4_comment_block_object).strip().strip("\n:")
-    return_val.quotes_ordered_dict = collected_quotes
-    return return_val
+    # after decomposing all the <blockquote> elements, whatever remains belong to the focus user
+    output_named_tuple.focus_user_comment = format_comments(bs4_comment_block_object).strip().strip("\n:")
+    output_named_tuple.quotes_ordered_dict = collected_quotes
+    return output_named_tuple
 
 def sort_dictionary_by_value(dictionary_to_sort):
     """
@@ -238,6 +241,8 @@ def sort_dictionary_by_value(dictionary_to_sort):
     ordered_dictionary = sorted(dictionary_to_sort.items(), key=itemgetter(1), reverse=True)
     sorted_dictionary_list = [i[0] for i in ordered_dictionary]
     return sorted_dictionary_list
+
+assert sort_dictionary_by_value({5:'goat', 10:'cat', 1:'dog'}) == [5, 1, 10]
 
 class Nairaland(object):
     """The base nairaland class
@@ -319,7 +324,7 @@ class PostCollector(Nairaland):
             each.parent.decompose()
         rows = soup.find('table', summary='posts').find_all('tr')
 
-        return_val = OrderedDict()
+        output_ordered_dict = OrderedDict()
         for i in range(0, len(rows), 2):
 
             topic_classes = ['bold l pu', 'bold l pu nocopy'] # topic div should be either of these classes
@@ -342,12 +347,12 @@ class PostCollector(Nairaland):
 
             # If a moniker already exists (i.e. a user has already commented), append an integer to the
             # present one to differentiate them.
-            if moniker not in return_val:
-                return_val[moniker] = parsed_block
+            if moniker not in output_ordered_dict:
+                output_ordered_dict[moniker] = parsed_block
             else:
                 moniker = "{}**{}".format(moniker, i)
-                return_val[moniker] = parsed_block
-        return return_val
+                output_ordered_dict[moniker] = parsed_block
+        return output_ordered_dict
 
     def scrap_comments_for_range_of_pages(self, start=0, stop=1, __all=False):
         """Get contents for a range of pages from start to stop"""
@@ -441,7 +446,7 @@ class UserCommentHistory(Nairaland):
             each.parent.decompose() # remove these trees as they are unneeded
         rows = soup.find('table', id=False, summary=False).find_all('tr')
 
-        return_val = OrderedDict()
+        output_ordered_dict = OrderedDict()
         for i in range(0, len(rows), 2): # go to every second row
             
             topic_classes = ['bold l pu', 'bold l pu nocopy']
@@ -467,12 +472,12 @@ class UserCommentHistory(Nairaland):
             Comm.topic = topic
             Comm.parsed_comment = parsed_block
 
-            if section not in return_val:
-                return_val[section] = Comm
+            if section not in output_ordered_dict:
+                output_ordered_dict[section] = Comm
             else:
                 section = "{}**{}".format(section, i)
-                return_val[section] = Comm
-        return return_val
+                output_ordered_dict[section] = Comm
+        return output_ordered_dict
 
     def scrap_comments_for_range_of_pages(self, start=0, stop=0, _maximum_pages=False):
         """Get contents for a range of pages from start to stop """
@@ -647,7 +652,7 @@ def export_user_comments_to_html(username=None, max_page=5):
                 f.write('\t\t\t<h4>Subject: {}</h4>'.format(topic_plus_comment.topic))
                 
                 parsed_comment = topic_plus_comment.parsed_comment
-                f.write("\t\t\t<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_ordered_dict))
+                f.write("\t\t\t<p class='text-success'>{}</p>\n".format(parsed_comment.focus_user_comment))
                 quotes = parsed_comment.quotes_ordered_dict
                 
                 for username, comment in quotes.items():
@@ -716,7 +721,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
             active_sheet.cell(row=row_number, column=2, value=topic_plus_comment.topic)
             
             parsed_comment = topic_plus_comment.parsed_comment # a namedtuple instance. Multiple cells here
-            active_sheet.cell(row=row_number, column=3, value=parsed_comment.focus_user_ordered_dict)
+            active_sheet.cell(row=row_number, column=3, value=parsed_comment.focus_user_comment)
 
             quotes = parsed_comment.quotes_ordered_dict
             
@@ -879,7 +884,7 @@ def export_post_ms_word(post_url, start=0, stop=2):
         document.add_heading('Page {}'.format(i), level=1)
         for moniker, parsed_comment in page.items():
             document.add_paragraph().add_run(moniker).bold = True
-            document.add_paragraph(parsed_comment.focus_user_ordered_dict)
+            document.add_paragraph(parsed_comment.focus_user_comment)
             for commenter, comment in parsed_comment.quotes_ordered_dict.items():
                 document.add_paragraph().add_run(commenter).italic = True
                 document.add_paragraph().add_run(comment).italic = True

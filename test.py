@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 import types
+
+from pathlib import Path
 from unittest import mock
 
 from bs4 import BeautifulSoup
@@ -10,21 +12,39 @@ from collections import OrderedDict
 
 import hack
 
+TEST_DIRECTORY = Path.joinpath(hack.BASE_DIR, 'test-dir')
+
 # REVISIT
 class TestParseCommentBlock(unittest.TestCase):
-    def test_comment_block_parsing(self):
-        test_ouput_directory = os.path.join(hack.BASE_DIR, 'test-dir')
+    pass
 
-        with open('test-dir/test_input_comment_parser.html', 'r+') as rh:
-            soup = BeautifulSoup(rh.read(), 'html5lib').find('div', class_='narrow')
-        with open('test-dir/test_comment_parser_output.txt', 'r+') as r:
-            excpected = r.read()
-        parsed_data = hack.parse_comment_block(soup)
+    # def test_parse_comment_block(self):
+    #     with open(Path.joinpath(TEST_DIRECTORY, 'test_input_comment_parser.html'), 'r+') as rh:
+    #         soup = BeautifulSoup(rh.read(), 'html5lib').find('div', class_='narrow')
+    #     c = hack.parse_comment_block(soup)
 
-        print(excpected)
-        print()
-        print(parsed_data)
-        self.assertEqual(parsed_data, excpected)
+    #     excpected = """
+    #     First paragraph
+
+    #     A reply to ...
+    #     Another reply, now to
+    #     Final reply to poster 3
+    #     Final paragraph
+    #     ++++++++++++++++
+
+    #     Poster1
+    #     Poster 1 first paragraph
+    #     Poster 1 second paragraph
+    #     Poster 1 3rd paragraph
+    #     Poster2
+    #     Poster 2 first paragraph
+    #     Poster3
+    #     Poster 3 first paragraph
+    #     """
+
+    #     print("excpected\n", c)
+    #     print("parsed_data\n", c)
+    #     self.assertEqual(c, excpected)
 
 class TestParsebrTag(unittest.TestCase):
     def test_element_with_only_previous_sibling(self):
