@@ -308,7 +308,7 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_range_of_user
 
 <hr>
 
-### TopicCollector()
+#### TopicCollector()
 
 ##### Section topics `<tr>` structure
 
@@ -360,7 +360,7 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_range_of_user
 </tr>
 ```
 
-### Unpacking Topics
+##### Unpacking Topics
 
 ```python
 import textwrap
@@ -386,6 +386,10 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
 #### `export_topics_to_html(section='romance', start=0, stop=3)`
 
 #### `export_topics_to_excel(section='romance', start=0, stop=3)`
+
+#### `export_post_docx(post_url, start=0, stop=2, _all_pages=False)`
+
+#### `export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False)`
 
 ## To do
 
