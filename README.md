@@ -310,16 +310,21 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_range_of_user
 
 ### Section topics `<tr>` structure
 
+![Section topics <tr> structure](img/section_topics_tr_structure.png)
+
 ```html
 <tr>
     <td id="top2792995" class="w">
         <a name="2792995"></a>
-        <img src="/icons/sticky.gif">
+        <img src="/icons/sticky.gif"> <!--This is used as some kind of label-->
         <b>
-            <a href="/2792995/some-text">Topic title</a>
+            <a href="/2792995/some-text">Title</a>
         </b>
         <a href="topic-full-url/1">(1)</a>
         <a href="topic-full-url/2">(2)</a>
+        <!--many other pages may be displayed is similar format
+        <a href="topic-full-url/2">(2)</a>
+        -->
         <a href="topic-full-url/max-page">(max-page)</a>
         <img src="/icons/new.gif">
         <b>*</b>
@@ -330,17 +335,22 @@ for page in list(UserCommentHistory("preccy69").scrap_comments_for_range_of_user
                 <a href="/username">username</a>
             </b>
             .
-            <b>number of comments</b>
-            posts &amp;
-            <b>number of views</b>
+            <b>n</b>
+            posts &
+            <b>m</b>
             views.
+            (
+            <b>
+            <a href="/last-commenter-username">last-commenter-username</a>
+            </b>
+            )
             <b>00:00am</b>
             On
             <b>Jun 03</b> <!-- Visible for posts older than current date -->
             <b>2015</b> <!-- Visible for posts older than current year -->
             (
             <b>
-                <a href="/user_">user_</a>
+                <a href="/username">username</a>
             </b>
             )
         </span>
@@ -374,12 +384,6 @@ for page in TopicCollector(section='politics').scrap_topics_for_range_of_pages(s
 #### `export_topics_to_html(section='romance', start=0, stop=3)`
 
 #### `export_topics_to_excel(section='romance', start=0, stop=3)`
-
-
-## Libraries used in this project
-
-1. Openpyxl
-1. Python docx
 
 ## To do
 
