@@ -879,7 +879,8 @@ def export_post_ms_word(post_url, start=0, stop=2, _all_pages=False):
     i = 1    
     document = Document()
     post = PostCollector(post_url)
-    document.add_heading(post.get_title(), 0)
+    document.add_paragraph(post_url)
+    f.write('[{0}]({0})\n\n'.format(post_url))
     for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
         for moniker, parsed_comment in page.items():
             document.add_paragraph().add_run(moniker).bold = True
@@ -910,6 +911,7 @@ def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
     with open(destination_file, 'a+', encoding='utf-8') as f:
         i = 1    
         f.write('# {}\n\n'.format(post.get_title()))
+        f.write('[{0}]({0})\n\n'.format(post_url))
         for page in list(post.scrap_comments_for_range_of_post_pages(start=0, stop=2, _all_pages=_all_pages)):
             for moniker, parsed_comment in page.items():
                 f.write('**{}**\n\n'.format(moniker))
@@ -920,7 +922,7 @@ def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
                     f.write('\t{}\n\n'.format(comment))
             i += 1
 
-    print("Done hacking")
+    print("Done hacking. Opening file")
     os.startfile(destination_file)
 
 if __name__ == "__main__":
