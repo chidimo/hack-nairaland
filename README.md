@@ -34,7 +34,7 @@ The analysis can be found in the included `politics-analysis.ipynb` jupyter note
 1. Issue the command `pipenv install`. Wait for the environment to be recreated.
 1. Issue the command `pipenv shell` to activate the environment.
 1. The next step is to create the `ipython`/`jupyter` notebook kernel used by this project. My own is shown in the image below for reference.
-1. To create the custom `ipython`/`jupyter` notebook kernel, issue the following commands (This step is required)
+1. To create the custom `ipython`/`jupyter` notebook kernel, issue either of the following commands. (In the second command, the `--name other-env` argument value pair is optional)
 
     `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
 
