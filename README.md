@@ -9,37 +9,20 @@ This project started as an exercise on web scraping as a way to understand how `
 
 The following functions are available for exporting data. Several demos are provided in the accompanying `Hack Nairaland.ipynb` jupyter notebook. You should start from there.
 
-### `export_user_comments_to_html(username=None, max_page=5)`
-
-Export all comments made by a user to html file. You may select how many pages of comments you want to grab.
-
-### `export_user_comments_to_excel(username=None, max_page=5)`
-
-Export all comments made by a user to excel file. You may select how many pages of comments you want to grab.
-
-### `export_topics_to_html(section='politics', start=0, stop=3)`
-
-Export all post titles from a section within a range that you specify to html file.
-
-### `export_topics_to_excel(section='politics', start=0, stop=3)`
-
-Export all post titles from a section within a range that you specify to excel file.
-
-### `export_post_docx(post_url, start=0, stop=2, _all_pages=False)`
-
-Save a post permanently by exporting it to `docx` format
-
-### `export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False)`
-
-Save a post permanently by exporting it to `markdown` format
+1. `export_user_comments_to_html(username=None, max_page=5)`: Export all comments made by a user to html file. You may select how many pages of comments you want to grab.
+1. `export_user_comments_to_excel(username=None, max_page=5)`: Export all comments made by a user to excel file. You may select how many pages of comments you want to grab.
+1. `export_topics_to_html(section='politics', start=0, stop=3)`: Export all post titles from a section within a range that you specify to html file.
+1. `export_topics_to_excel(section='politics', start=0, stop=3)`: Export all post titles from a section within a range that you specify to excel file.
+1. `export_post_docx(post_url, start=0, stop=2, _all_pages=False)`: Save a post permanently by exporting it to `docx` format
+1. `export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False)`: Save a post permanently by exporting it to `markdown` format
 
 I have made a very modest attempt at analyzing post titles using `pandas`. It is only meant to give a taste of what you can accomplish with this project.
 
-The analysis can be found in the accompanying `politics-analysis.ipynb` jupyter notebook. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages of titles on the politics section. As of the time of writing, the site reports that there over `8,000` pages of titles in the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly go higher if you have good internet and hardware (aka RAM). If you're interested in text analysis, you can think of this project as the missing nairaland.com `API`.
+The analysis can be found in the included `politics-analysis.ipynb` jupyter notebook. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages of titles on the politics section. As of the time of writing, the site reports that there over `8,000` pages of titles in the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly pull more data if you have good internet and hardware (aka RAM). If you're interested in text analysis, you can think of this project as the missing nairaland.com `API`.
 
 ## Challenges
 
-1. The major challenge I encountered was how to scrap posts. Its quite hard to get a scrap that exactly matches original text as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `<br>` element and it makes it hard to actually grab the actual comment text. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
+1. The major challenge I encountered was how to scrap posts. Its quite hard to get a scrap that exactly matches original text as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `<br>` element and it makes it hard to grab the actual page text. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
 1. Purposeful tradeoffs have been made in some cases, for example, in the case where a user quotes several others in one comment block, the `parse_comment_block` function ignores order when parsing the comments. It simply collects all of the user's comments into one block on top, then, all of the quoted user's comments into another block at the bottom. Which means that the ordering as you would see such a comment on nairaland is lost. But I made that decision because, from my experience using nairaland, such cases are not common.
 1. I have documented some of the most common structures you'll find on the site further down with actual screenshots to drive home the point.
 
@@ -50,23 +33,20 @@ The analysis can be found in the accompanying `politics-analysis.ipynb` jupyter 
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded `hack-nairaland` folder
 1. Issue the command `pipenv install`. Wait for the environment to be recreated.
 1. Issue the command `pipenv shell` to activate the environment.
-1. The next step is to create the `ipython` kernel used by this project. My own is shown in the image below for reference.
+1. The next step is to create the `ipython`/`jupyter` notebook kernel used by this project. My own is shown in the image below for reference.
+1. To create the custom `ipython`/`jupyter` notebook kernel, issue the following commands (This step is required)
 
-### Creating the `hack-nairaland` kernel
+    `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
 
-To create the custom `ipython` kernel, issue the following commands (This step is required)
+    `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
 
-1. `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
-
-1. `python -m ipykernel install --user --display-name "Hack nairaland or whatever name you like"`
-
-See this [gist](https://gist.github.com/chidimo/fa24e4172649e99eb1912c921117c7f6) for more details.
+1. See this [gist](https://gist.github.com/chidimo/fa24e4172649e99eb1912c921117c7f6) for more details about creating a custom `ipython`/`jupyter` notebook kernel.
 
 ![Hack-nairaland kernel in jupyter notebook](img/hack-nairaland-kernel.png)
 
 ## Nairaland sections
 
-Each of the classes `PostCollector`, ``, and `` have a `.sections` property that is inherited from the base `Nairaland` class. This property returns a python `dictionary` of `{section : section url}`. The complete output is shown below.
+Each of the classes `PostCollector`, `UserCommentHistory`, and `TopicCollector` have a `.sections` property that is inherited from the base `Nairaland` class. This property returns a python `dictionary` of `{section : section url}`. The complete output as of the time of writing is shown below.
 
 ![nairaland sections](img/nairaland_sections.png)
 
