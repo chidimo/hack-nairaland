@@ -33,6 +33,9 @@ class Error(Exception):
 class NonExistentNairalandUser(Error):
     pass
 
+class MaximumPageNotFound(Error):
+    pass
+
 def new_logger(log_file_name):
     FORMATTER = logging.Formatter("%(asctime)s:%(funcName)s:%(levelname)s\n%(message)s")
     # console_logger = logging.StreamHandler(sys.stdout)
@@ -372,11 +375,9 @@ class PostCollector(Nairaland):
     def commenters_activity_summary(self):
         """Return count of number of times a user commented on a post
         To be finished..."""
-        x = Counter(self.all_commenters())
-        print(x)
-        print("Sorted dict")
-        print(sort_dictionary_by_value(x))
-        return
+        return sort_dictionary_by_value(
+            Counter(self.all_commenters())
+        )
 
 class UserCommentHistory(Nairaland):
     """
@@ -422,8 +423,7 @@ class UserCommentHistory(Nairaland):
         try:
             return int(re.search(pattern, str(soup)).group(1))
         except AttributeError:
-            print("Could not find max page")
-            pass
+            raise MaximumPageNotFound("Could not find max page")
 
     def _scrap_comment_for_single_page(self, page_url):
         """Return comments and commenters on a single post page
@@ -585,10 +585,7 @@ def export_user_comments_to_html(username=None, max_page=5):
     """
 
     if not username:
-        print("No username provided. Ending")
-        return
-    else:
-        print("Now hacking {}'s comments to generate html file. Please wait a few minutes.".format(username))
+        raise NonExistentNairalandUser("Please provide a username.")
 
     destination_file = os.path.join(OUTPUT_DIR, "comments_{}_{}_pages.html".format(username.lower(), max_page))
     if os.path.exists(destination_file):
@@ -680,7 +677,6 @@ def export_user_comments_to_html(username=None, max_page=5):
         # end jquery smooth scroll
         f.write("\t</body>\n")
         f.write("</html>")
-    print("Done hacking")
     os.startfile(destination_file)
 
 def export_user_comments_to_excel(username=None, max_page=5):
@@ -694,10 +690,7 @@ def export_user_comments_to_excel(username=None, max_page=5):
         Maximum page count for user's comments (Default is 5). The loop breaks if we exceed actual count
     """
     if not username:
-        print("No username provided. Ending")
-        return
-    else:
-        print("Now hacking {}'s comments to generate excel file. Please wait a few minutes.".format(username))
+        raise NonExistentNairalandUser("Please provide a username.")
 
     work_book = OP.Workbook()
     active_sheet = work_book.active
@@ -732,15 +725,12 @@ def export_user_comments_to_excel(username=None, max_page=5):
         os.remove(destination_file)
 
     work_book.save(destination_file)
-    print("Done hacking")
     os.startfile(destination_file)
 
 def export_topics_to_html(section='romance', start=0, stop=3):
     """
     Writes all topics between start and end of a section to a html file
     """
-
-    print("Now hacking {} to generate html file. Please wait a few minutes.".format(section))
 
     destination_file = os.path.join(OUTPUT_DIR, "{}_page_{}_{}_pages.html".format(section, start, stop))
     if os.path.exists(destination_file):
@@ -826,13 +816,10 @@ def export_topics_to_html(section='romance', start=0, stop=3):
         # finish up page structure
         f.write("\t</body>\n")
         f.write("</html>")
-    print("Done hacking")
     os.startfile(destination_file)
 
 def export_topics_to_excel(section='romance', start=0, stop=3):
     """Writes all topics between start and end of a section to excel"""
-
-    print("Now hacking {} to generate excel file. Please wait a few minutes.".format(section))
 
     work_book = OP.Workbook()
     active_sheet = work_book.active
@@ -864,13 +851,10 @@ def export_topics_to_excel(section='romance', start=0, stop=3):
     if os.path.exists(destination_file):
         os.remove(destination_file)
     work_book.save(destination_file)
-    print("Done hacking")
     os.startfile(destination_file)
 
 def export_post_docx(post_url, start=0, stop=2, _all_pages=False):
-    """Export post to word"""
-
-    print("Now hacking {} to generate docx file. Please wait a few minutes.".format(post_url))
+    """Export post to .docx format"""
 
     i = 1
     document = Document()
@@ -891,13 +875,10 @@ def export_post_docx(post_url, start=0, stop=2, _all_pages=False):
     if os.path.exists(destination_file):
         os.remove(destination_file)
     document.save(destination_file)
-    print("Done hacking")
     os.startfile(destination_file)
 
 def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
-    """Export post to markdown"""
-
-    print("Now hacking {} to generate markdown file. Please wait a few minutes.".format(post_url))
+    """Export post to markdown format"""
 
     post = PostCollector(post_url)
     destination_file = os.path.join(OUTPUT_DIR, "post_{}.md".format(post.get_title()))
@@ -917,8 +898,6 @@ def export_post_to_markdown(post_url, start=0, stop=2, _all_pages=False):
                     f.write('\t{}\n\n'.format(commenter))
                     f.write('\t{}\n\n'.format(comment))
             i += 1
-
-    print("Done hacking. Opening file")
     os.startfile(destination_file)
 
 if __name__ == "__main__":
