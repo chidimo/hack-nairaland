@@ -1,6 +1,6 @@
 # Hack [Nairaland](https://nairaland.com)
 
-This project started as an exercise on web scraping as a way to understand how `HTML` pages worked. Please do not use it to overload the nairaland servers. You could always pull in your data in chunks as I've demonstrated in the `politics-analysis` jupyter notebook. I'd advise you get your data at around midnight (Nigerian time, GMT+1), when there's likely to be less traffic.
+This project started as an exercise on web scraping, and as a way to understand how `HTML` pages worked. Please do not use it to overload the nairaland servers. You could always pull in your data in chunks as I've demonstrated in the `politics-analysis` jupyter notebook. I'd advise you get your data at around midnight (Nigerian time, GMT+1), when there's likely to be less traffic.
 
 *Shameless plug: A few days ago I decided to update the project and release it publicly as part of my growing [portfolio](http://parousia.pythonanywhere.com/portfolio/) since I'm actively looking for opportunities as a `Full stack Django developer (advanced)`, `Full stack meteor developer (beginner)` or `python` developer, . Email: orjichidi95@gmail.com, Phone: +234 903 665 0603.*
 
