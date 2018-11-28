@@ -118,9 +118,9 @@ This function has a side effect of writing all comments it encounters to a singl
 namedtuple('ParsedComment', ['focus_user_comment', 'quotes_ordered_dict'])
 
 # Internal structure
-('focus_user_comment', OrderedDict([('', 'comment')]))
+('focus_user_comment', OrderedDict([('username', 'comment')]))
 
-('quotes_ordered_dict', OrderedDict([('', 'comment')]))
+('quotes_ordered_dict', OrderedDict([('username', 'comment')]))
 ```
 
 ### Classes
