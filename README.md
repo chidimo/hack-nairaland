@@ -1,7 +1,6 @@
-
 # Hack [Nairaland](https://nairaland.com)
 
-This project started as an exercise on web scraping as a way to understand how `HTML` pages worked. Please do not use it to overload the nairaland servers. You could always pull in your data in chunks as I've demonstrated in the `politics-analysis` jupyter notebook. I'd advise you get your data at around midnight (Nigerian time), when there's likely to be less traffic.
+This project started as an exercise on web scraping as a way to understand how `HTML` pages worked. Please do not use it to overload the nairaland servers. You could always pull in your data in chunks as I've demonstrated in the `politics-analysis` jupyter notebook. I'd advise you get your data at around midnight (Nigerian time, GMT+1), when there's likely to be less traffic.
 
 *Shameless plug: A few days ago I decided to update the project and release it publicly as part of my growing [portfolio](http://parousia.pythonanywhere.com/portfolio/) since I'm actively looking for opportunities as a `Full stack Django developer (advanced)`, `Full stack meteor developer (beginner)` or `python` developer, . Email: orjichidi95@gmail.com, Phone: +234 903 665 0603.*
 
@@ -18,22 +17,21 @@ The following functions are available for exporting data. Several demos are prov
 
 I have made a very modest attempt at analyzing post titles using `pandas`. It is only meant to give a taste of what you can accomplish with this project.
 
-The analysis can be found in the included `politics-analysis.ipynb` jupyter notebook. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use those same files. The analysis covers only about `1,000` pages of titles on the politics section. As of the time of writing, the site reports that there over `8,000` pages of titles in the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly pull more data if you have good internet and hardware (aka RAM). If you're interested in text analysis, you can think of this project as the missing nairaland.com `API`.
+The analysis can be found in the included `politics-analysis.ipynb` jupyter notebook. You may use that as a template for your own analysis. The excel files I used in my analysis are available in the `politics-analysis/` folder, just in case you want to use the same files. The analysis covers only about `1,000` pages of titles on the politics section. As of the time of writing, the site reports that there over `8,000` pages of titles in the politics section. Each of these `1,000` pages have a minimum of `60` titles each, thus we're looking at over `60,000` titles. This is the reason I split the title collection into chunks of `100` pages each so that each excel file has about `6,000` rows of data. You could certainly pull more data if you have good internet and hardware (aka RAM). If you're interested in text analysis, you can think of this project as the missing nairaland.com `API`.
 
 ## Challenges
 
 1. The major challenge I encountered was how to scrap posts. Its quite hard to get a scrap that exactly matches original text as seen on nairaland. This is a result of multitude of `<br>` elements on the post and comment pages. Every press of the `ENTER` key adds a new `<br>` element and it makes it hard to grab the actual page text. But thanks to `BeautifulSoup4` and the `html5lib` parser, up to 90% accuracy of representation was achieved.
-1. Purposeful tradeoffs have been made in some cases, for example, in the case where a user quotes several others in one comment block, the `parse_comment_block` function ignores order when parsing the comments. It simply collects all of the user's comments into one block on top, then, all of the quoted user's comments into another block at the bottom. Which means that the ordering as you would see such a comment on nairaland is lost. But I made that decision because, from my experience using nairaland, such cases are not common.
-1. I have documented some of the most common structures you'll find on the site further down with actual screenshots to drive home the point.
+1. Purposeful tradeoffs have been made in some cases, for example, in the case where a user quotes several others in one comment block, the `parse_comment_block` function ignores order when parsing the comments. It simply collects all of the user's comments into one block on top, then, all of the quoted user's comments into another block at the bottom. Which means that the ordering as you would see such a comment on nairaland is lost. But I made that decision because, from my experience using nairaland, such cases are not common. I have documented some of the most common structures you'll find on the site further down with actual screenshots to drive home the point.
 
 ## Acquiring and working with this project
 
-1. Requirement: `python` and `pipenv` must be installed on your computer. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, you can install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
-1. Clone (aka grab your copy) the `github` repo with this link `git clone https://github.com/chidimo/hack-nairaland.git`.
+1. Requirement: `python` and `pipenv` must be installed on your computer. You can download and install python from the [official site](https://www.python.org/downloads/). After installing python, install `pipenv` by issuing the command `pip install pipenv` inside `cmd.exe`.
+1. Clone (aka grab your copy) the `github` repo by copying this link `git clone https://github.com/chidimo/hack-nairaland.git`.
 1. Open `cmd.exe` and `cd` (i.e. navigate) into the downloaded `hack-nairaland` folder
 1. Issue the command `pipenv install`. Wait for the environment to be recreated.
 1. Issue the command `pipenv shell` to activate the environment.
-1. The next step is to create the `ipython`/`jupyter` notebook kernel used by this project. My own is shown in the image below for reference.
+1. The next step is to create the `ipython`/`jupyter` notebook kernel used by this project. Mine is shown in the image below for reference.
 1. To create the custom `ipython`/`jupyter` notebook kernel, issue either of the following commands. (In the second command, the `--name other-env` argument value pair is optional)
 
     `python -m ipykernel install --user --name other-env --display-name "Hack nairaland"`
@@ -140,7 +138,7 @@ This class is employed in scraping a nairaland post.
 Return type of `types.generator`. It `yield`s `OrderedDict()`s, where each has the structure shown below.
 
 ```python
-OrderedDict(['', parse_comment_block function object])
+OrderedDict(['username', parse_comment_block function object])
 ```
 
 ##### User comment header `<tr>` structure in *post view*
